@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
 Plugin Name: Renivate Rating
 Plugin URI: http://wordpress.org/
@@ -10,28 +10,33 @@ License: GPL2
 Text Domain: multi-rating
 Domain Path: languages
 */
-	
+
 class Renivate {
-	
+		
 		/**
 		 * Activation
 		 */
-	
+
 		 static function install() {
 				// do not generate any output here
 		 }
-		
+
 		/**
 		 * DeActivation
 		 */
-	
+
 		function pluginprefix_deactivation() {
-			
+
 			global $wpdb;
-		
-			$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'renivate' );
-			
+
+			//$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'renivate_reviews' );
+
 			flush_rewrite_rules();
+
+		}
+		
+		
+		function create_post_type() {
 		 
 		}
 
@@ -40,41 +45,28 @@ class Renivate {
 		 */
 
 	function rev_install() {
-		
+
 		global $db_version;
 		$db_version = '1.0';
 
 		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'renivate';
-		
-		$charset_collate = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE $table_name (
-			rating_id bigint(20) NOT NULL AUTO_INCREMENT,
-					author varchar(50) NOT NULL,
-					rating varchar(20) NOT NULL,
-					language text NOT NULL,
-					subrating varchar(30) NOT NULL,
-					triptype varchar(30) NOT NULL,
-					PRIMARY KEY  (rating_id)
-		) $charset_collate;";
 
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		dbDelta( $sql );
+		//dbDelta( $sql );
 
 		add_option( 'db_version', $db_version );
-		
-		
+
+		//add_action( 'init', 'create_post_type' );
 	}
 	
 	/**
-	 * 
-	 *	Connection String for Renivate API 
+	 *
+	 *	Connection String for Renivate API
 	 *  Inserting Json Values from API
 	 */
-	function rev_install_data($url="") {
-	
+	function rev_install_data() {
+
 		$url = "https://porter.revinate.com/hotels/10463";
 		$url = "https://porter.revinate.com/hotels/10463/reviews";
 		$url = "https://porter.revinate.com/hotels/10470/reviews";
@@ -95,7 +87,7 @@ class Renivate {
 			'X-Revinate-Porter-Username:' .$USERNAME,
 			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
 			'X-Revinate-Porter-Encoded:' . $ENCODED,
-		
+
 		));
 
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -107,65 +99,196 @@ class Renivate {
 		$error = curl_error($ch);
 
 		$http_code = curl_getinfo($ch );
-		
+
 		curl_close($ch);
 		$arr =  json_decode($http_result,true);
 		$content = $arr['content'];
-		
-		
+
+
 		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'renivate';
+
+		// $table_name = $wpdb->prefix . 'renivate_reviews';
 		foreach($content as $val){
-			$wpdb->insert( 
-				$table_name, 
-				array( 
-					'author' => $val['author'],
-					'rating' => $val['rating'],			
-					'language' => $val['language']['englishName'],
-					'subrating' => $val['subratings']['Service'],
-					'triptype' => $val['tripType']
-				) 
-			);
+
+			$title = $val['title'];
+
+			if(!isset($title)){
+				$title = "";
+			}
+
+			$post_id = wp_insert_post(array (
+				'post_type' => 'renivate_reviews',
+				'post_title' => $val['title'],
+				'post_content' => $val['language']['englishName'],
+				'post_status' => 'publish',
+				'comment_status' => 'closed',   // if you prefer
+				'ping_status' => 'closed',      // if you prefer
+			));
+
+			if ($post_id) {
+				// insert post meta
+				add_post_meta($post_id, 'title', $val['title']);
+				add_post_meta($post_id, 'link', $val['links'][0]['href']);
+				add_post_meta($post_id, 'author', $val['author']);
+				add_post_meta($post_id, 'rating', $val['rating']);
+				add_post_meta($post_id, 'language', $val['language']['englishName']);
+				add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
+				add_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
+				add_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
+				add_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
+				add_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
+				add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
+				add_post_meta($post_id, 'triptype', $val['tripType']);
+				add_post_meta($post_id, 'pagesize', $val['page']['size']);
+				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
+				add_post_meta($post_id, 'numbers', $val['page']['number']);
+			}
+
+			
 		}
-		
+
 	}
 	
+
 	
-	
+}
 	/**
 	 * Includes files
 	 */
 	function includes() {
-		require_once( plugin_dir_path( __FILE__ ) . 'admin/snh_rating.php');
-	
+			
+        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
+        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
+        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
+		include  dirname( __FILE__ )  . '/admin/settings.php';
+		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
+		
 	}
-	
-}
+	add_action('wp_head', 'includes');
 
-	function view_shortcode(){
-		
-		global $wpdb;
-		
-		$table_name = $wpdb->prefix . 'renivate';
-		
-		$view = $wpdb->get_results("select author,rating,language,subrating,triptype from ".$table_name."");
-		
-		foreach($view as $result){
-		
-			echo $result->author; 
-		}
-		
-		print_r($view);
-		return '';
+	// setup the location custom post type 
+	add_action( 'init', 'srd_reviews_register_post_type' ); 
 	
+	// register the location post type 
+	
+	function srd_reviews_register_post_type() {    
+	
+	// setup the arguments for the location post type   
+	$reviews_args = array(         
+		'public' => true,       
+		'query_var' => 'reviews',        
+		'rewrite' => array(           
+			'slug' => 'renivate_reviews',         
+			'with_front' => false      
+		),       
+		'supports' => array(    
+			'title',          
+			'editor',  			      
+			'thumbnail'     
+		),        
+		'labels' => array(        
+			'name' => 'Reviews', 
+            'singular_name' => 'Reviews',
+			'add_new' => 'Add New Reviews',   
+			'add_new_item' => 'Add New Reviews',   
+			'edit_item' => 'Edit Reviews',     
+			'new_item' => 'New Reviews',          
+			'view_item' => 'View Reviews',       
+			'search_items' => 'Search Reviews',      
+			'not_found' => 'No Reviews Found',      
+			'not_found_in_trash' => 'No Reviews Found in Trash'  
+		),       
+		
+		);    
+		//register the post type    
+		register_post_type( 'renivate_reviews', $reviews_args );     
+		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
+	} 
+	
+	// Add the Renivate Reviews Meta Boxes
+
+		function add_reviews_metaboxes() {
+			add_meta_box('wpt_reviews_location', 'Renivate Reviews', 'wpt_reviews_location', 'renivate_reviews', 'normal', 'default');
+		}
+	
+	// The Renivate Reviews Metabox
+
+	function wpt_reviews_location() {
+			global $post;
+		
+		// Noncename needed to verify where the data originated
+			echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+			wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
+		
+		// Get the data if its already been entered
+			$title = get_post_meta($post->ID, 'title', true);
+			$link = get_post_meta($post->ID, 'link', true);
+			$author = get_post_meta($post->ID, 'author', true);
+			$language = get_post_meta($post->ID, 'language', true);
+			$rating = get_post_meta($post->ID, 'rating', true);
+			$subratings = get_post_meta($post->ID, 'subratings', true);
+			$roomsubratings = get_post_meta($post->ID, 'roomsubratings', true);
+			$valuesubratings = get_post_meta($post->ID, 'valuesubratings', true);
+			$cleansubratings = get_post_meta($post->ID, 'cleansubratings', true);
+			$hotelsubratings = get_post_meta($post->ID, 'hotelsubratings', true);
+			$locationsubratings = get_post_meta($post->ID, 'locationsubratings', true);
+			$triptype = get_post_meta($post->ID, 'triptype', true);
+			
+		
+		// Echo out the field
+			echo '<p>Title:</p>';
+			echo '<input type="text" name="title" value="' . $title  . '" class="widefat" />';
+			echo '<p>Link</p>';
+			echo '<input type="text" name="link" value="' . $link  . '" class="widefat" />';
+			echo '<p>Author</p>';
+			echo '<input type="text" name="author" value="' . $author  . '" class="widefat" />';
+			echo '<p>Language</p>';
+			echo '<input type="text" name="language" value="' . $language  . '" class="widefat" />';
+			echo '<p>Rating</p>';
+			echo '<input type="text" name="rating" value="' . $rating  . '" class="widefat" />';
+			echo '<p>Subratings</p>';
+			echo '<p>Service</p>';
+			echo '<input type="text" name="subratings" value="' . $subratings  . '" class="widefat" />';
+			echo '<p>Rooms</p>';
+			echo '<input type="text" name="roomsubratings" value="' . $roomsubratings  . '" class="widefat" />';
+			echo '<p>Cleanliness</p>';
+			echo '<input type="text" name="cleansubratings" value="' . $cleansubratings  . '" class="widefat" />';
+			echo '<p>location</p>';
+			echo '<input type="text" name="locationsubratings" value="' . $locationsubratings  . '" class="widefat" />';
+			echo '<p>Hotel Condition</p>';
+			echo '<input type="text" name="hotelsubratings" value="' . $hotelsubratings  . '" class="widefat" />';
+			echo '<p>Triptype</p>';
+			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
+			
 	}
+	add_filter( 'the_content', 'cd_display' );
+	function cd_display(  )
+	{   
+		global $wpdb;
+		// We only want this on single posts, bail if we're not in a single post
+		if( !is_single() ) 
+		
+		// We're in the loop, so we can grab the $post variable
+		global $post;
+		if(get_post_type($post->ID) == 'renivate_reviews'){
+		
+		include  dirname( __FILE__ )  . '/templates/single_reviews.php';
+		
+		}
+	}
+	
+	 function view_shortcode(){
+		
+	} 
 	add_shortcode('starrating', 'view_shortcode');
+	
+	
+	
 	/**
 	 * Function for Tabs
 	 */
 
-	function rev_admin_tabs( $current = 'homepage' ) {
+	 function rev_admin_tabs( $current = 'homepage' ) {
 		if($_REQUEST['page']=="renivate-plugin"){
 			$revtabs = array( 'homepage' => 'Home Settings', 'general' => 'General' );
 			echo '<div class="wrap"><div id="icon-themes" class="icon32"><br></div>';
@@ -173,28 +296,15 @@ class Renivate {
 			foreach( $revtabs as $tab => $name ){
 				$class = ( $tab == $current ) ? ' nav-tab-active' : '';
 				echo "<a class='nav-tab$class' href='?page=theme-settings&tab=$tab'>$name</a>";
-
 			}
 			echo '</h2></div>';
 		}
-	}
+	} 
 
-	//add_action('plugins_loaded','rev_admin_tabs');
+	add_action('plugins_loaded','rev_admin_tabs');
 
-	/**
-	 * Function for Admin menu
-	 */
-	add_action('admin_menu', 'rev_plugin_setup_menu');
-	 
-	function rev_plugin_setup_menu(){
-			add_menu_page( 'Renivate Plugin Page', 'Renivate Rating', 'manage_options', 'renivate-plugin', 'rev_init' );
-	}
- 
-	function rev_init(){
-			echo "<h1>Renivate Rating Plugin Settings</h1>";
-			echo "<h3>The best rating plugin for WordPress. Renivate Rating shows rating from multiple rating sites.</h3>";
-			rev_admin_tabs();
-	}
+	
+	
 	/**
 	 * Hooks for activation of plugin
 	 */
