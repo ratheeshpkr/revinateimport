@@ -12,7 +12,7 @@ Domain Path: languages
 */
 
 class Renivate {
-
+		
 		/**
 		 * Activation
 		 */
@@ -34,10 +34,10 @@ class Renivate {
 			flush_rewrite_rules();
 
 		}
-
-
+		
+		
 		function create_post_type() {
-
+		 
 		}
 
 		/**
@@ -59,7 +59,7 @@ class Renivate {
 
 		//add_action( 'init', 'create_post_type' );
 	}
-
+	
 	/**
 	 *
 	 *	Connection String for Renivate API
@@ -115,7 +115,6 @@ class Renivate {
 			if(!isset($title)){
 				$title = "";
 			}
-
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 
@@ -151,81 +150,84 @@ class Renivate {
 				add_post_meta($post_id, 'numbers', $val['page']['number']);
 			}
 
-
+			
 		}
 
 	}
+	
 
-
-
+	
 }
 	/**
 	 * Includes files
 	 */
 	function includes() {
-
-        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
-        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
-        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
+			
+        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
+        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport/js/star.js');
+        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport/css/star.css');
+		
 		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
-
+		
 	}
 	add_action('wp_head', 'includes');
 
-	// setup the location custom post type
-	add_action( 'init', 'srd_reviews_register_post_type' );
-
-	// register the location post type
-
-	function srd_reviews_register_post_type() {
-
-	// setup the arguments for the location post type
-	$reviews_args = array(
-		'public' => true,
-		'query_var' => 'reviews',
-		'rewrite' => array(
-			'slug' => 'renivate_reviews',
-			'with_front' => false
-		),
-		'supports' => array(
-			'title',
-			'editor',
-			'thumbnail'
-		),
-		'labels' => array(
-			'name' => 'Reviews',
+	// setup the location custom post type 
+	add_action( 'init', 'srd_reviews_register_post_type' ); 
+	
+	// register the location post type 
+	
+	function srd_reviews_register_post_type() {    
+	
+	// setup the arguments for the location post type   
+	$reviews_args = array(         
+		'public' => true,       
+		'query_var' => 'reviews',        
+		'rewrite' => array(           
+			'slug' => 'renivate_reviews',         
+			'with_front' => false      
+		),       
+		'has_archive'        => true,
+		'show_in_menu'       => true,
+		'supports' => array(    
+			'title',          
+			'editor',  			      
+			'thumbnail'     
+		),        
+		'labels' => array(        
+			'name' => 'Reviews', 
             'singular_name' => 'Reviews',
-			'add_new' => 'Add New Reviews',
-			'add_new_item' => 'Add New Reviews',
-			'edit_item' => 'Edit Reviews',
-			'new_item' => 'New Reviews',
-			'view_item' => 'View Reviews',
-			'search_items' => 'Search Reviews',
-			'not_found' => 'No Reviews Found',
-			'not_found_in_trash' => 'No Reviews Found in Trash'
-		),
-
-		);
-		//register the post type
-		register_post_type( 'renivate_reviews', $reviews_args );
+			'add_new' => 'Add New Reviews',   
+			'add_new_item' => 'Add New Reviews',   
+			'edit_item' => 'Edit Reviews',     
+			'new_item' => 'New Reviews',          
+			'view_item' => 'View Reviews',       
+			'search_items' => 'Search Reviews',      
+			'not_found' => 'No Reviews Found',      
+			'not_found_in_trash' => 'No Reviews Found in Trash'  
+		),       
+		
+		);    
+		//register the post type    
+		register_post_type( 'renivate_reviews', $reviews_args );     
 		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
-	}
-
+	} 
+	
 	// Add the Renivate Reviews Meta Boxes
 
 		function add_reviews_metaboxes() {
 			add_meta_box('wpt_reviews_location', 'Renivate Reviews', 'wpt_reviews_location', 'renivate_reviews', 'normal', 'default');
 		}
-
+	
 	// The Renivate Reviews Metabox
 
 	function wpt_reviews_location() {
 			global $post;
-
+		
 		// Noncename needed to verify where the data originated
-			echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
+			echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
 			wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
-
+		
 		// Get the data if its already been entered
 			$title = get_post_meta($post->ID, 'title', true);
 			$link = get_post_meta($post->ID, 'link', true);
@@ -239,8 +241,8 @@ class Renivate {
 			$hotelsubratings = get_post_meta($post->ID, 'hotelsubratings', true);
 			$locationsubratings = get_post_meta($post->ID, 'locationsubratings', true);
 			$triptype = get_post_meta($post->ID, 'triptype', true);
-
-
+			
+		
 		// Echo out the field
 			echo '<p>Title:</p>';
 			echo '<input type="text" name="title" value="' . $title  . '" class="widefat" />';
@@ -265,28 +267,30 @@ class Renivate {
 			echo '<input type="text" name="hotelsubratings" value="' . $hotelsubratings  . '" class="widefat" />';
 			echo '<p>Triptype</p>';
 			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
-
+			
 	}
 	add_filter( 'the_content', 'cd_display' );
 	function cd_display(  )
-	{
+	{   
 		global $wpdb;
 		// We only want this on single posts, bail if we're not in a single post
-		if( !is_single() )
-
+		if( !is_single() ) 
+		
 		// We're in the loop, so we can grab the $post variable
 		global $post;
 		if(get_post_type($post->ID) == 'renivate_reviews'){
-
+		
 		include  dirname( __FILE__ )  . '/templates/single_reviews.php';
-
+		
 		}
 	}
-
+	
 	 function view_shortcode(){
-
-	}
+		
+	} 
 	add_shortcode('starrating', 'view_shortcode');
+	
+		
 	function myplugin_register_settings() {
 	   add_option( 'myplugin_option_name', 'This is my option value.');
 	   register_setting( 'myplugin_options_group', 'myplugin_option_name', 'myplugin_callback' );
@@ -300,6 +304,8 @@ class Renivate {
 		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'myplugin/images/icon.png' ), 6 ); 
 		//add_submenu_page( 'reviews', 'Renivate', 'manage_options', 'edit.php?post_type=renivate_reviews', NULL );
 	}
+	
+	
 		add_filter('cron_schedules', 'add_scheduled_interval');
 
 	 	// add once 5 minute interval to wp schedules
