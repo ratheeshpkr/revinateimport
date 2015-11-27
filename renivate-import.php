@@ -116,6 +116,13 @@ class Renivate {
 				$title = "";
 			}
 
+			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
+			$pageposts = $wpdb->get_results($querystr, OBJECT);
+
+			if(count($pageposts) > 0){
+				continue;
+			}
+
 			$post_id = wp_insert_post(array (
 				'post_type' => 'renivate_reviews',
 				'post_title' => $val['title'],
@@ -160,7 +167,6 @@ class Renivate {
         wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
         wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
         wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
-		include  dirname( __FILE__ )  . '/admin/settings.php';
 		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
 
 	}
@@ -281,27 +287,19 @@ class Renivate {
 
 	}
 	add_shortcode('starrating', 'view_shortcode');
-
-
-
-	/**
-	 * Function for Tabs
-	 */
-
-	 function rev_admin_tabs( $current = 'homepage' ) {
-		if($_REQUEST['page']=="renivate-plugin"){
-			$revtabs = array( 'homepage' => 'Home Settings', 'general' => 'General' );
-			echo '<div class="wrap"><div id="icon-themes" class="icon32"><br></div>';
-			echo '<h2 class="nav-tab-wrapper">';
-			foreach( $revtabs as $tab => $name ){
-				$class = ( $tab == $current ) ? ' nav-tab-active' : '';
-				echo "<a class='nav-tab$class' href='?page=theme-settings&tab=$tab'>$name</a>";
-			}
-			echo '</h2></div>';
-		}
+	function myplugin_register_settings() {
+	   add_option( 'myplugin_option_name', 'This is my option value.');
+	   register_setting( 'myplugin_options_group', 'myplugin_option_name', 'myplugin_callback' );
 	}
+	add_action( 'admin_init', 'myplugin_register_settings' );
 
-		add_action('plugins_loaded','rev_admin_tabs');
+	add_action( 'admin_menu', 'register_my_custom_menu_page' );
+
+	function register_my_custom_menu_page(){
+		include  dirname( __FILE__ )  . '/admin/settings.php';
+		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'myplugin/images/icon.png' ), 6 ); 
+		//add_submenu_page( 'reviews', 'Renivate', 'manage_options', 'edit.php?post_type=renivate_reviews', NULL );
+	}
 		add_filter('cron_schedules', 'add_scheduled_interval');
 
 	 	// add once 5 minute interval to wp schedules
@@ -315,8 +313,6 @@ class Renivate {
 		}
 
 		add_action('cron_revinate_pull', 'rev_install_data');
-
-
 	/**
 	 * Hooks for activation of plugin
 	 */
