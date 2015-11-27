@@ -305,20 +305,23 @@ class Renivate {
 		//add_submenu_page( 'reviews', 'Renivate', 'manage_options', 'edit.php?post_type=renivate_reviews', NULL );
 	}
 	
+	/***                     
+		Cron For API 
 	
-		add_filter('cron_schedules', 'add_scheduled_interval');
+	*/
+	add_filter('cron_schedules', 'add_scheduled_interval');
 
-	 	// add once 5 minute interval to wp schedules
-		function add_scheduled_interval($schedules) {
-		 	$schedules['minutes_5'] = array('interval'=>300, 'display'=>'Once 5 minutes');
-		 	return $schedules;
-		}
+	// add once 5 minute interval to wp schedules
+	function add_scheduled_interval($schedules) {
+		$schedules['minutes_5'] = array('interval'=>300, 'display'=>'Once 5 minutes');
+		return $schedules;
+	}
 
-		if (!wp_next_scheduled('cron_revinate_pull')) {
-				wp_schedule_event(time(), 'minutes_5', 'cron_revinate_pull');
-		}
+	if (!wp_next_scheduled('cron_revinate_pull')) {
+			wp_schedule_event(time(), 'minutes_5', 'cron_revinate_pull');
+	}
 
-		add_action('cron_revinate_pull', 'rev_install_data');
+	add_action('cron_revinate_pull', 'rev_install_data');
 	/**
 	 * Hooks for activation of plugin
 	 */
