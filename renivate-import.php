@@ -66,14 +66,16 @@ class Renivate {
 	 *  Inserting Json Values from API
 	 */
 	function rev_install_data() {
-
-		$url = "https://porter.revinate.com/hotels/10463";
-		$url = "https://porter.revinate.com/hotels/10463/reviews";
-		$url = "https://porter.revinate.com/hotels/10470/reviews";
+	
+		/* $url = "https://porter.revinate.com/hotels/10463/reviews";
+		$url = "https://porter.revinate.com/hotels/10470/reviews"; 
 		$USERNAME="martin.rusteberg@snhgroup.com";
 		$TOKEN="ef74b36fe595cf9fdef0bce348616c3d";
-		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";
-
+		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";*/
+		$url = get_option('reniv_settings_url');
+		$USERNAME= get_option('reniv_settings_username');
+		$TOKEN= get_option('reniv_settings_token');
+		$SECRET= get_option('reniv_settings_secret');
 		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
 		$TIMESTAMP = time();
 
@@ -209,7 +211,8 @@ class Renivate {
 		
 		);    
 		//register the post type    
-		register_post_type( 'renivate_reviews', $reviews_args );     
+		register_post_type( 'renivate_reviews', $reviews_args );
+			
 		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
 	} 
 	
@@ -269,41 +272,39 @@ class Renivate {
 			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
 			
 	}
-	add_filter( 'the_content', 'cd_display' );
-	function cd_display(  )
-	{   
-		global $wpdb;
-		// We only want this on single posts, bail if we're not in a single post
-		if( !is_single() ) 
-		
-		// We're in the loop, so we can grab the $post variable
-		global $post;
-		if(get_post_type($post->ID) == 'renivate_reviews'){
-		
-		include  dirname( __FILE__ )  . '/templates/single_reviews.php';
-		
-		}
-	}
 	
-	 function view_shortcode(){
-		
-	} 
-	add_shortcode('starrating', 'view_shortcode');
-	
-		
 	function myplugin_register_settings() {
 	   add_option( 'myplugin_option_name', 'This is my option value.');
 	   register_setting( 'myplugin_options_group', 'myplugin_option_name', 'myplugin_callback' );
 	}
 	add_action( 'admin_init', 'myplugin_register_settings' );
 
-	add_action( 'admin_menu', 'register_my_custom_menu_page' );
+	add_action( 'admin_menu', 'register_my_custom_menu_page1' );
 
-	function register_my_custom_menu_page(){
+	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
-		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'myplugin/images/icon.png' ), 6 ); 
-		//add_submenu_page( 'reviews', 'Renivate', 'manage_options', 'edit.php?post_type=renivate_reviews', NULL );
+		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 ); 
+		add_action( 'admin_init', 'update_extra_post_info' );
 	}
+	
+	if( !function_exists("update_extra_post_info") ) {
+		function update_extra_post_info() {
+		  register_setting( 'myplugin_options_group', 'reniv_settings_url' );
+		  register_setting( 'myplugin_options_group', 'reniv_settings_username' );
+		  register_setting( 'myplugin_options_group', 'reniv_settings_token' );
+		  register_setting( 'myplugin_options_group', 'reniv_settings_secret' );
+		}
+	}
+	
+	function view_shortcode(){
+		echo 'hai';
+	} 
+	
+	function register_shortcodes(){
+	   add_shortcode('starrating', 'view_shortcode');
+	   
+	}
+	add_action( 'init', 'register_shortcodes');
 	
 	/***                     
 		Cron For API 
@@ -330,3 +331,21 @@ class Renivate {
 	register_deactivation_hook( __FILE__, 'pluginprefix_deactivation' );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install') );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install_data') );
+	
+
+	function cd_display($single_templat)
+	{   
+		global $wpdb;
+		// We only want this on single posts, bail if we're not in a single post
+		if( is_single() ){			
+			// We're in the loop, so we can grab the $post variable
+			global $post;
+			if($post->post_type == 'renivate_reviews'){
+				$single_templat = dirname( __FILE__ ).'/templates/single_reviews.php';
+			}
+			
+			return $single_templat;
+		}
+	}
+	
+	add_filter( 'single_template', 'cd_display' );
