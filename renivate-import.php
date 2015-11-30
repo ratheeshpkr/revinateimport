@@ -72,7 +72,6 @@ class Renivate {
 		$USERNAME="martin.rusteberg@snhgroup.com";
 		$TOKEN="ef74b36fe595cf9fdef0bce348616c3d";
 		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";*/
-		if($url == ''){
 		$url = get_option('reniv_settings_url');
 		$USERNAME= get_option('reniv_settings_username');
 		$TOKEN= get_option('reniv_settings_token');
@@ -107,56 +106,55 @@ class Renivate {
 		$arr =  json_decode($http_result,true);
 		$content = $arr['content'];
 
-		}
-		if($url != '')
-		{
-			global $wpdb;
-			// $table_name = $wpdb->prefix . 'renivate_reviews';
-			foreach($content as $val){
 
-				$title = $val['title'];
+		global $wpdb;
 
-				if(!isset($title)){
-					$title = "";
-				}
-				$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
-				$pageposts = $wpdb->get_results($querystr, OBJECT);
+		// $table_name = $wpdb->prefix . 'renivate_reviews';
+		foreach($content as $val){
 
-				if(count($pageposts) > 0){
-					continue;
-				}
+			$title = $val['title'];
 
-				$post_id = wp_insert_post(array (
-					'post_type' => 'renivate_reviews',
-					'post_title' => $val['title'],
-					'post_content' => $val['language']['englishName'],
-					'post_status' => 'publish',
-					'comment_status' => 'closed',   // if you prefer
-					'ping_status' => 'closed',      // if you prefer
-				));
-
-				if ($post_id) {
-					// insert post meta
-					add_post_meta($post_id, 'title', $val['title']);
-					add_post_meta($post_id, 'link', $val['links'][0]['href']);
-					add_post_meta($post_id, 'author', $val['author']);
-					add_post_meta($post_id, 'rating', $val['rating']);
-					add_post_meta($post_id, 'language', $val['language']['englishName']);
-					add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
-					add_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
-					add_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
-					add_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
-					add_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
-					add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
-					add_post_meta($post_id, 'triptype', $val['tripType']);
-					add_post_meta($post_id, 'pagesize', $val['page']['size']);
-					add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
-					add_post_meta($post_id, 'numbers', $val['page']['number']);
-				}
-
-
+			if(!isset($title)){
+				$title = "";
 			}
+			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
+			$pageposts = $wpdb->get_results($querystr, OBJECT);
+
+			if(count($pageposts) > 0){
+				continue;
+			}
+
+			$post_id = wp_insert_post(array (
+				'post_type' => 'renivate_reviews',
+				'post_title' => $val['title'],
+				'post_content' => $val['language']['englishName'],
+				'post_status' => 'publish',
+				'comment_status' => 'closed',   // if you prefer
+				'ping_status' => 'closed',      // if you prefer
+			));
+
+			if ($post_id) {
+				// insert post meta
+				add_post_meta($post_id, 'title', $val['title']);
+				add_post_meta($post_id, 'link', $val['links'][0]['href']);
+				add_post_meta($post_id, 'author', $val['author']);
+				add_post_meta($post_id, 'rating', $val['rating']);
+				add_post_meta($post_id, 'language', $val['language']['englishName']);
+				add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
+				add_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
+				add_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
+				add_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
+				add_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
+				add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
+				add_post_meta($post_id, 'triptype', $val['tripType']);
+				add_post_meta($post_id, 'pagesize', $val['page']['size']);
+				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
+				add_post_meta($post_id, 'numbers', $val['page']['number']);
+			}
+
+
 		}
+
 	}
 
 
