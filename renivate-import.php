@@ -12,7 +12,7 @@ Domain Path: languages
 */
 
 class Renivate {
-		
+
 		/**
 		 * Activation
 		 */
@@ -34,10 +34,10 @@ class Renivate {
 			flush_rewrite_rules();
 
 		}
-		
-		
+
+
 		function create_post_type() {
-		 
+
 		}
 
 		/**
@@ -59,16 +59,16 @@ class Renivate {
 
 		//add_action( 'init', 'create_post_type' );
 	}
-	
+
 	/**
 	 *
 	 *	Connection String for Renivate API
 	 *  Inserting Json Values from API
 	 */
 	function rev_install_data() {
-	
+
 		/* $url = "https://porter.revinate.com/hotels/10463/reviews";
-		$url = "https://porter.revinate.com/hotels/10470/reviews"; 
+		$url = "https://porter.revinate.com/hotels/10470/reviews";
 		$USERNAME="martin.rusteberg@snhgroup.com";
 		$TOKEN="ef74b36fe595cf9fdef0bce348616c3d";
 		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";*/
@@ -152,85 +152,85 @@ class Renivate {
 				add_post_meta($post_id, 'numbers', $val['page']['number']);
 			}
 
-			
+
 		}
 
 	}
-	
 
-	
+
+
 }
 	/**
 	 * Includes files
 	 */
 	function includes() {
-			
+
         wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
         wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport/js/star.js');
         wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport/css/star.css');
-		
+
 		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
-		
+
 	}
 	add_action('wp_head', 'includes');
 
-	// setup the location custom post type 
-	add_action( 'init', 'srd_reviews_register_post_type' ); 
-	
-	// register the location post type 
-	
-	function srd_reviews_register_post_type() {    
-	
-	// setup the arguments for the location post type   
-	$reviews_args = array(         
-		'public' => true,       
-		'query_var' => 'reviews',        
-		'rewrite' => array(           
-			'slug' => 'renivate_reviews',         
-			'with_front' => false      
-		),       
+	// setup the location custom post type
+	add_action( 'init', 'srd_reviews_register_post_type' );
+
+	// register the location post type
+
+	function srd_reviews_register_post_type() {
+
+	// setup the arguments for the location post type
+	$reviews_args = array(
+		'public' => true,
+		'query_var' => 'reviews',
+		'rewrite' => array(
+			'slug' => 'renivate_reviews',
+			'with_front' => false
+		),
 		'has_archive'        => true,
 		'show_in_menu'       => true,
-		'supports' => array(    
-			'title',          
-			'editor',  			      
-			'thumbnail'     
-		),        
-		'labels' => array(        
-			'name' => 'Reviews', 
+		'supports' => array(
+			'title',
+			'editor',
+			'thumbnail'
+		),
+		'labels' => array(
+			'name' => 'Reviews',
             'singular_name' => 'Reviews',
-			'add_new' => 'Add New Reviews',   
-			'add_new_item' => 'Add New Reviews',   
-			'edit_item' => 'Edit Reviews',     
-			'new_item' => 'New Reviews',          
-			'view_item' => 'View Reviews',       
-			'search_items' => 'Search Reviews',      
-			'not_found' => 'No Reviews Found',      
-			'not_found_in_trash' => 'No Reviews Found in Trash'  
-		),       
-		
-		);    
-		//register the post type    
+			'add_new' => 'Add New Reviews',
+			'add_new_item' => 'Add New Reviews',
+			'edit_item' => 'Edit Reviews',
+			'new_item' => 'New Reviews',
+			'view_item' => 'View Reviews',
+			'search_items' => 'Search Reviews',
+			'not_found' => 'No Reviews Found',
+			'not_found_in_trash' => 'No Reviews Found in Trash'
+		),
+
+		);
+		//register the post type
 		register_post_type( 'renivate_reviews', $reviews_args );
-			
+
 		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
-	} 
-	
+	}
+
 	// Add the Renivate Reviews Meta Boxes
 
 		function add_reviews_metaboxes() {
 			add_meta_box('wpt_reviews_location', 'Renivate Reviews', 'wpt_reviews_location', 'renivate_reviews', 'normal', 'default');
 		}
-	
+
 	// The Renivate Reviews Metabox
 
 	function wpt_reviews_location() {
 			global $post;
-		
+
 		// Noncename needed to verify where the data originated
-			echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' . 
+			echo '<input type="hidden" name="eventmeta_noncename" id="eventmeta_noncename" value="' .
 			wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
-		
+
 		// Get the data if its already been entered
 			$title = get_post_meta($post->ID, 'title', true);
 			$link = get_post_meta($post->ID, 'link', true);
@@ -244,8 +244,8 @@ class Renivate {
 			$hotelsubratings = get_post_meta($post->ID, 'hotelsubratings', true);
 			$locationsubratings = get_post_meta($post->ID, 'locationsubratings', true);
 			$triptype = get_post_meta($post->ID, 'triptype', true);
-			
-		
+
+
 		// Echo out the field
 			echo '<p>Title:</p>';
 			echo '<input type="text" name="title" value="' . $title  . '" class="widefat" />';
@@ -270,9 +270,9 @@ class Renivate {
 			echo '<input type="text" name="hotelsubratings" value="' . $hotelsubratings  . '" class="widefat" />';
 			echo '<p>Triptype</p>';
 			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
-			
+
 	}
-	
+
 	function myplugin_register_settings() {
 	   add_option( 'myplugin_option_name', 'This is my option value.');
 	   register_setting( 'myplugin_options_group', 'myplugin_option_name', 'myplugin_callback' );
@@ -283,10 +283,10 @@ class Renivate {
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
-		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 ); 
+		add_menu_page( 'settings', 'Renivate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 );
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
-	
+
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
 		  register_setting( 'myplugin_options_group', 'reniv_settings_url' );
@@ -295,20 +295,37 @@ class Renivate {
 		  register_setting( 'myplugin_options_group', 'reniv_settings_secret' );
 		}
 	}
-	
+
 	function view_shortcode(){
-		echo 'hai';
-	} 
-	
+		 global $wpdb;
+	   //$posttable= $wpdb->prefix."posts";
+	   //$postmetatable= $wpdb->prefix."postmeta";
+		 $querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'renivate_reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
+	   //$querystr = "SELECT '%s'.ID from '%s' join '%s' on '%s'.ID = '%s'.post_id where %smeta_key='rating' order by '%s'.meta_value desc";
+	   $pageposts = $wpdb->get_results($querystr);
+	   //print_r($pageposts);
+		 foreach($pageposts as $val){
+			 if($val->post_title != ''){
+				 $author = get_post_meta($val->ID, 'author', false);
+				 $rating = get_post_meta($val->ID, 'rating', false);
+				 echo "<div class='ratingbox'>";
+				 echo "<div class='title'>".(string)$val->post_title."</div>";
+				 echo "<div class='author'>".$author[0]."</div>";
+				 echo "<span class='stars'>".$rating[0]."</span>";
+	  		 echo "</div>";
+			 }
+		 }
+	}
+
 	function register_shortcodes(){
 	   add_shortcode('starrating', 'view_shortcode');
-	   
+
 	}
 	add_action( 'init', 'register_shortcodes');
-	
-	/***                     
-		Cron For API 
-	
+
+	/***
+		Cron For API
+
 	*/
 	add_filter('cron_schedules', 'add_scheduled_interval');
 
@@ -331,21 +348,21 @@ class Renivate {
 	register_deactivation_hook( __FILE__, 'pluginprefix_deactivation' );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install') );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install_data') );
-	
+
 
 	function cd_display($single_templat)
-	{   
+	{
 		global $wpdb;
 		// We only want this on single posts, bail if we're not in a single post
-		if( is_single() ){			
+		if( is_single() ){
 			// We're in the loop, so we can grab the $post variable
 			global $post;
 			if($post->post_type == 'renivate_reviews'){
 				$single_templat = dirname( __FILE__ ).'/templates/single_reviews.php';
 			}
-			
+
 			return $single_templat;
 		}
 	}
-	
+
 	add_filter( 'single_template', 'cd_display' );

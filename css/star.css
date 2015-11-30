@@ -8,3 +8,32 @@ span.stars, span.stars span {
 span.stars span {
     background-position: 0 0;
 }
+
+.ratingbox{
+      background-color: #fafafa;
+      width: 200px;
+      height: 120px;
+      margin: 10px;
+      padding: 0px;
+      float: left;
+      border: 1px solid #cacaca
+    }
+    .ratingbox .title{
+      background-color: #C3C3C3;
+      float: left;
+      width: 198px;
+      height: 40px;
+      text-overflow: ellipsis;
+      padding: 10px 5px;
+    }
+    .ratingbox .author{
+      background-color: #eaeaea;
+      float: left;
+      width: 198px;
+      text-overflow: ellipsis;
+      padding: 10px;
+    }
+    .ratingbox span.stars{
+      float: left;
+      margin: 5px;
+    }
