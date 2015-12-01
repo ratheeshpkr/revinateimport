@@ -366,3 +366,12 @@ class Renivate {
 	}
 
 	add_filter( 'single_template', 'cd_display' );
+	function get_custom_post_type_template($archive_template)
+	{
+		global $wpdb;
+		if (is_post_type_archive('renivate_reviews')) {
+			$archive_template = dirname(__FILE__) . '/templates/archive-reviews.php';
+		}
+		return $archive_template;
+	}
+	add_filter('archive_template', 'get_custom_post_type_template');
