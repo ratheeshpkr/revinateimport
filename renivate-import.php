@@ -309,10 +309,9 @@ class Renivate {
 	}
 
 	function view_shortcode(){
-		 global $wpdb;
-	   //$posttable= $wpdb->prefix."posts";
-	   //$postmetatable= $wpdb->prefix."postmeta";
-		 $querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'renivate_reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
+		global $wpdb;
+	   
+		$querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'renivate_reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
 	   //$querystr = "SELECT '%s'.ID from '%s' join '%s' on '%s'.ID = '%s'.post_id where %smeta_key='rating' order by '%s'.meta_value desc";
 	   $pageposts = $wpdb->get_results($querystr);
 	   //print_r($pageposts);
@@ -380,7 +379,7 @@ class Renivate {
 		} 
 		
 	}
-
+	
 	add_filter( 'single_template', 'cd_display' );
 	
 	/**
