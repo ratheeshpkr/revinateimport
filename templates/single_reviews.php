@@ -16,6 +16,7 @@
 	
 	do_action( 'snhotel_before_main_content' ); 
 		global $post;
+		global $wpdb;
 	?>
 
 	<div class="container">		
@@ -42,7 +43,7 @@
 		echo '</br>';
 		echo '<strong>Triptype:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'triptype', true); 
 		echo '</br>';
-		$avg = $wpdb->get_results("select AVG(meta_value) as Average from wp_postmeta where meta_key='rating'");
+		$avg = $wpdb->get_results("select AVG(meta_value) as Average from $wpdb->postmeta where $wpdb->meta_key='rating'");
 		echo 'Average: '.array_shift($avg)->Average;
 		
 		?>

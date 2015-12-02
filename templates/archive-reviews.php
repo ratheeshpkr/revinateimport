@@ -8,9 +8,7 @@
  * @package     Renivate/Templates
  * @version     0.1
  */
-
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-
 get_header( 'snhotel' ); ?>
 
         <?php 	while ( have_posts() ) : the_post(); 
