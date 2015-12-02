@@ -27,9 +27,15 @@ class Renivate {
 
 		function pluginprefix_deactivation() {
 
-			global $wpdb;
+			global $wpdb; // Must have this or else!
 
-			//$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'renivate_reviews' );
+			$postmeta_table = $wpdb->postmeta;
+			$posts_table = $wpdb->posts;
+
+			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = 'link'");
+			//$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = '_mrlpt_client_phone_num'");
+			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'renivate_reviews'");
+
 
 			flush_rewrite_rules();
 
@@ -45,6 +51,8 @@ class Renivate {
 		 */
 
 	function rev_install() {
+	
+		ob_start();
 
 		global $db_version;
 		$db_version = '1.0';
@@ -67,15 +75,16 @@ class Renivate {
 	 */
 	function rev_install_data() {
 
-		/* $url = "https://porter.revinate.com/hotels/10463/reviews";
-		$url = "https://porter.revinate.com/hotels/10470/reviews";
+ 		//$url = "https://porter.revinate.com/hotels/10463/reviews";
+		/*$url = "https://porter.revinate.com/hotels/10470";
 		$USERNAME="martin.rusteberg@snhgroup.com";
 		$TOKEN="ef74b36fe595cf9fdef0bce348616c3d";
-		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";*/
+		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";   */
 		$url = get_option('reniv_settings_url');
+		 
 		$USERNAME= get_option('reniv_settings_username');
 		$TOKEN= get_option('reniv_settings_token');
-		$SECRET= get_option('reniv_settings_secret');
+		$SECRET= get_option('reniv_settings_secret');    
 		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
 		$TIMESTAMP = time();
 
@@ -105,7 +114,9 @@ class Renivate {
 		curl_close($ch);
 		$arr =  json_decode($http_result,true);
 		$content = $arr['content'];
-
+		
+		//print_r($content);
+		//exit();
 
 		global $wpdb;
 
@@ -119,7 +130,8 @@ class Renivate {
 			}
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
-
+			/* print_r($pageposts);
+			exit(); */
 			if(count($pageposts) > 0){
 				continue;
 			}
@@ -345,10 +357,13 @@ class Renivate {
 	 */
 
 	register_activation_hook( __FILE__, array( 'Renivate', 'install' ) );
-	register_deactivation_hook( __FILE__, 'pluginprefix_deactivation' );
+	register_deactivation_hook( __FILE__, array('Renivate','pluginprefix_deactivation') );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install') );
 	register_activation_hook( __FILE__, array( 'Renivate','rev_install_data') );
 
+	/**
+		Single Page Template
+	*/
 
 	function cd_display($single_templat)
 	{
@@ -362,7 +377,21 @@ class Renivate {
 			}
 
 			return $single_templat;
-		}
+		} 
+		
 	}
 
 	add_filter( 'single_template', 'cd_display' );
+	
+	/**
+		Archieve Page Template
+	*/
+	function get_custom_post_type_template($archive_template)
+	{
+		global $wpdb;
+		if (is_post_type_archive('renivate_reviews')) {
+			$archive_template = dirname(__FILE__) . '/templates/archive-reviews.php';
+		}
+		return $archive_template;
+	}
+	add_filter('archive_template', 'get_custom_post_type_template');
