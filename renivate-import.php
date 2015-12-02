@@ -42,13 +42,10 @@ class Renivate {
 		}
 
 
-		function create_post_type() {
-
-		}
-
-		/**
-		 * Table to be created while installing
-		 */
+		
+	/**
+	 * Table to be created while installing
+	 */
 
 	function rev_install() {
 	
@@ -65,7 +62,6 @@ class Renivate {
 
 		add_option( 'db_version', $db_version );
 
-		//add_action( 'init', 'create_post_type' );
 	}
 
 	/**
@@ -102,8 +98,6 @@ class Renivate {
 		));
 
 		curl_setopt($ch, CURLOPT_URL, $url);
-
-
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 		$http_result = curl_exec($ch);
@@ -115,9 +109,6 @@ class Renivate {
 		$arr =  json_decode($http_result,true);
 		$content = $arr['content'];
 		
-		//print_r($content);
-		//exit();
-
 		global $wpdb;
 
 		// $table_name = $wpdb->prefix . 'renivate_reviews';
@@ -130,8 +121,7 @@ class Renivate {
 			}
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
-			/* print_r($pageposts);
-			exit(); */
+			
 			if(count($pageposts) > 0){
 				continue;
 			}
@@ -168,8 +158,6 @@ class Renivate {
 		}
 
 	}
-
-
 
 }
 	/**
