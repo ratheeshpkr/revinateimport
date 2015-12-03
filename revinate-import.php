@@ -200,10 +200,10 @@ class Revinate {
 			'thumbnail'
 		),
 		'labels' => array(
-			'name' => 'Reviews',
+			'name' => 'Revinate',
             'singular_name' => 'Reviews',
-			'add_new' => 'Add Review',
-			'add_new_item' => 'Add Review',
+			'add_new' => 'Add Reviews',
+			'add_new_item' => 'Add Reviews',
 			'edit_item' => 'Edit Reviews',
 			'new_item' => 'New Reviews',
 			'view_item' => 'View Reviews',
@@ -286,10 +286,13 @@ class Revinate {
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
-		add_menu_page( 'settings', 'Revinate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 );
+		//add_menu_page( 'settings', 'Revinate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 );
+		//add_submenu_page( 'renivate', __( 'Reviews', 'renivate' ), __( 'Reviews', 'renivate' ), manage_options, 'edit.php?post_type=renivate_reviews' );
+		add_submenu_page('edit.php?post_type=revinate_reviews', 'Settings', 'Settings', 'edit_posts', basename(__FILE__), 'my_custom_menu_page');
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
 
+	
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
 		  register_setting( 'myplugin_options_group', 'revin_settings_url' );
