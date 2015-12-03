@@ -2,10 +2,10 @@
 /**
  * The Template for displaying all archive accommodation.
  *
- * Override this template by copying it to yourtheme/renivate/archive-reviews.php
+ * Override this template by copying it to yourtheme/revinate/archive-reviews.php
  *
  * @author      Sakha
- * @package     Renivate/Templates
+ * @package     Revinate/Templates
  * @version     0.1
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
