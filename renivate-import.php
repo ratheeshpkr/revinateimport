@@ -386,6 +386,11 @@ class Renivate {
 	}
 	add_filter('archive_template', 'get_custom_post_type_template');
 	
+	/****
+			Show Listings in admin Page
+	
+	*/
+	
 	add_action("manage_renivate_reviews_posts_custom_column",  "renivate_custom_columns");
 	add_filter("manage_renivate_reviews_posts_columns", "renivate_edit_columns");
 	 
