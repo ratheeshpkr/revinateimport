@@ -260,7 +260,7 @@ class Renivate {
 			echo '<input type="text" name="language" value="' . $language  . '" class="widefat" />';
 			echo '<p>Rating</p>';
 			echo '<input type="text" name="rating" value="' . $rating  . '" class="widefat" />';
-			echo '<p>Subratings</p>';
+			echo '<p><b>Subratings</b></p><hr>';
 			echo '<p>Service</p>';
 			echo '<input type="text" name="subratings" value="' . $subratings  . '" class="widefat" />';
 			echo '<p>Rooms</p>';
