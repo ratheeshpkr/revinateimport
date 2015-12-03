@@ -55,8 +55,8 @@ class Renivate {
 		$db_version = '1.0';
 
 		global $wpdb;
-
-
+		
+		
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		//dbDelta( $sql );
 
@@ -112,6 +112,7 @@ class Renivate {
 		global $wpdb;
 
 		// $table_name = $wpdb->prefix . 'renivate_reviews';
+		
 		foreach($content as $val){
 
 			$title = $val['title'];
@@ -119,6 +120,7 @@ class Renivate {
 			if(!isset($title)){
 				$title = "";
 			}
+			
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 			
@@ -134,7 +136,8 @@ class Renivate {
 				'comment_status' => 'closed',   // if you prefer
 				'ping_status' => 'closed',      // if you prefer
 			));
-
+			
+			
 			if ($post_id) {
 				// insert post meta
 				add_post_meta($post_id, 'title', $val['title']);
@@ -150,11 +153,11 @@ class Renivate {
 				add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
 				add_post_meta($post_id, 'triptype', $val['tripType']);
 				add_post_meta($post_id, 'pagesize', $val['page']['size']);
+				add_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
 				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
 				add_post_meta($post_id, 'numbers', $val['page']['number']);
 			}
-
-
+			
 		}
 
 	}
@@ -221,7 +224,7 @@ class Renivate {
 		function add_reviews_metaboxes() {
 			add_meta_box('wpt_reviews_location', 'Renivate Reviews', 'wpt_reviews_location', 'renivate_reviews', 'normal', 'default');
 		}
-
+	
 	// The Renivate Reviews Metabox
 
 	function wpt_reviews_location() {
@@ -382,3 +385,51 @@ class Renivate {
 		return $archive_template;
 	}
 	add_filter('archive_template', 'get_custom_post_type_template');
+	
+	add_action("manage_renivate_reviews_posts_custom_column",  "renivate_custom_columns");
+	add_filter("manage_renivate_reviews_posts_columns", "renivate_edit_columns");
+	 
+	function renivate_edit_columns($columns){
+	  $columns = array(
+		"cb" => "<input type='checkbox' />",
+		"title" => "Reviews Title",
+		"rating" => "Rating",
+		"language" => "Language",
+		"triptype" => "Trip Type",
+		"date" => "Date",	
+	  );
+	 
+	  return $columns;
+	}
+	function renivate_custom_columns($column){
+	  global $post;
+	 
+	  switch ($column) {
+		case "rating":
+		  $custom = get_post_custom( $post_id, 'rating', true );
+		  //foreach ($custom as $val){
+			echo  $custom['rating'][0];
+			//print_r($val['rating']);
+		  //}
+		  
+		  break;
+		case "language":
+		  $custom = get_post_custom();
+		  echo $custom["language"][0];
+		  break;
+		case "triptype":
+		  //echo get_the_term_list($post->ID, 'Skills', '', ', ','');
+		  $custom = get_post_custom();
+		  echo $custom["triptype"][0];
+		  break;
+		case "date":
+		  $custom = get_post_custom();
+		  echo $custom["date"][0];
+		  break;
+		case "":
+		  //echo get_the_term_list($post->ID, 'Skills', '', ', ','');
+		  $custom = get_post_custom();
+		  echo $custom["triptype"][0];
+		  break;
+	  }
+	}
