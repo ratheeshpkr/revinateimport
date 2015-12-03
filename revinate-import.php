@@ -168,9 +168,9 @@ class Revinate {
 	 */
 	function includes() {
 
-        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinate/js/jquery.min.js');
-        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinate/js/star.js');
-        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinate/css/star.css');
+        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
+        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport/js/star.js');
+        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport/css/star.css');
 
 		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
 
@@ -286,7 +286,7 @@ class Revinate {
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
-		add_menu_page( 'settings', 'Revinate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinate/images/revimg.png' ), 6 );
+		add_menu_page( 'settings', 'Revinate', 'manage_options', 'settingspage', 'my_custom_menu_page', plugins_url( 'revinateimport/images/revimg.png' ), 6 );
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
 
