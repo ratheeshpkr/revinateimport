@@ -53,7 +53,10 @@ get_header( 'snhotel' ); ?>
 
 		</div>
 
-        <?php endwhile; // end of the loop. ?>
+        <?php endwhile; // end of the loop.
+	previous_posts_link();echo "&nbsp;&nbsp";
+    next_posts_link();
+	?>
 
     
 
