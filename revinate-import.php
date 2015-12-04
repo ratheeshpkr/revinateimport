@@ -5,7 +5,7 @@ Plugin URI: http://wordpress.org/
 Description: The best rating plugin for WordPress. Revinate Rating shows all multiple Hotel ratings through Revinate API
 Version: 1.0
 Author: Sakhatech
-Author URI: http://sakhatech.com
+Author URI: https://github.com/ratheeshpkr/snhotel
 License: GPL2
 Text Domain: multi-rating
 Domain Path: languages
