@@ -5,7 +5,7 @@ Plugin URI: http://wordpress.org/
 Description: The best rating plugin for WordPress. Revinate Rating shows all multiple Hotel ratings through Revinate API
 Version: 1.0
 Author: Sakhatech
-Author URI: http://sakhatech.com
+Author URI: https://github.com/ratheeshpkr/revinateimport
 License: GPL2
 Text Domain: multi-rating
 Domain Path: languages
@@ -29,14 +29,18 @@ class Revinate {
 
 			global $wpdb; // Must have this or else!
 
-			$postmeta_table = $wpdb->postmeta;
+			 $postmeta_table = $wpdb->postmeta;
 			$posts_table = $wpdb->posts;
+			$option_table = $wpdb->options;
 
-			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = 'link'");
-			//$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = '_mrlpt_client_phone_num'");
+			
+			//$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = 'link'");
+			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
+				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
+				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage')");
 			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
-
-
+			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret')");
+			//$wpdb->query("TRUNCATE TABLE " .$postmeta_table);
 			flush_rewrite_rules();
 
 		}
@@ -70,13 +74,7 @@ class Revinate {
 	 *  Inserting Json Values from API
 	 */
 	function rev_install_data() {
-
- 		//$url = "https://porter.revinate.com/hotels/10463/reviews";
-		/*$url = "https://porter.revinate.com/hotels/10470";
-		$USERNAME="martin.rusteberg@snhgroup.com";
-		$TOKEN="ef74b36fe595cf9fdef0bce348616c3d";
-		$SECRET="f94c5129c8efd82a11c7a20c1471f77c4a08e922d9683b27456462e58878de19";   */
-		$url = get_option('revin_settings_url');
+		$hotelId = get_option('revin_settings_url');
 		 
 		$USERNAME= get_option('revin_settings_username');
 		$TOKEN= get_option('revin_settings_token');
@@ -94,24 +92,27 @@ class Revinate {
 			'X-Revinate-Porter-Username:' .$USERNAME,
 			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
 			'X-Revinate-Porter-Encoded:' . $ENCODED,
+			
 
 		));
-
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-		$http_result = curl_exec($ch);
-		$error = curl_error($ch);
-
-		$http_code = curl_getinfo($ch );
-
-		curl_close($ch);
-		$arr =  json_decode($http_result,true);
-		$content = $arr['content'];
-		
 		global $wpdb;
+			$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews";
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	
+			$http_result = curl_exec($ch);
+			$error = curl_error($ch);
+	
+			$http_code = curl_getinfo($ch );
+	
+			curl_close($ch);
+			$arr =  json_decode($http_result,true);
+			
+			$content = $arr['content'];
+			
+			
 
-		// $table_name = $wpdb->prefix . 'revinate_reviews';
+		
 		
 		foreach($content as $val){
 
@@ -159,10 +160,14 @@ class Revinate {
 			}
 			
 		}
+		
+		
+		
 
 	}
 
 }
+	
 	/**
 	 * Includes files
 	 */
@@ -235,6 +240,8 @@ class Revinate {
 			wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 
 		// Get the data if its already been entered
+	
+		
 			$title = get_post_meta($post->ID, 'title', true);
 			$link = get_post_meta($post->ID, 'link', true);
 			$author = get_post_meta($post->ID, 'author', true);
