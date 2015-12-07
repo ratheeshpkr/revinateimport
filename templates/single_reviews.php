@@ -21,10 +21,17 @@
 
 	<div class="container">		
 		<?php
-		
-		echo '<strong>Title:</strong>'.$meta_avail = get_post_meta(get_the_ID(), 'title', true);  
+		if(!empty(get_post_meta(get_the_ID(), 'title', true))){
+			$meta_avail = get_post_meta(get_the_ID(), 'title', true);
+		}
+		else{
+			$meta_avail = '';
+		}
+		echo '<strong>Title:</strong>'.$meta_avail;  
 		echo '</br>';
 		echo '<strong>Author:</strong>'.$meta_leadTime = get_post_meta(get_the_ID(),'author', true); 
+		echo '</br>';
+		echo '<strong>Author Location:</strong>'.$meta_location = get_post_meta(get_the_ID(),'authorlocation', true); 
 		echo '</br>';
 		echo '<strong>Link:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'link', true); 
 		echo '</br>';
