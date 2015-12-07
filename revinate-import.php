@@ -32,15 +32,15 @@ class Revinate {
 			 $postmeta_table = $wpdb->postmeta;
 			$posts_table = $wpdb->posts;
 			$option_table = $wpdb->options;
-
 			
+			$log_table = $wpdb->prefix . 'revinateLog';
 			//$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key = 'link'");
 			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
-				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage')");
+				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage','numbers','authorlocation')");
 			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
 			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret')");
-			//$wpdb->query("TRUNCATE TABLE " .$postmeta_table);
+			$wpdb->query("DROP TABLE ".$log_table);########log need to be inserted for cron file
 			flush_rewrite_rules();
 
 		}
@@ -59,10 +59,14 @@ class Revinate {
 		$db_version = '1.0';
 
 		global $wpdb;
-		
-		
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		//dbDelta( $sql );
+		$table_name = $wpdb->prefix . 'revinateLog';
+		$sql = "CREATE TABLE $table_name (id int(11) NOT NULL AUTO_INCREMENT,
+		pageNo int(11) NOT NULL,
+		TotalPage int(11) NOT NULL,
+		Success int(11) NOT NULL,
+		UNIQUE KEY id (id))";
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta( $sql );
 
 		add_option( 'db_version', $db_version );
 
@@ -73,47 +77,39 @@ class Revinate {
 	 *	Connection String for Revinate API
 	 *  Inserting Json Values from API
 	 */
-	function rev_install_data() {
-		$hotelId = get_option('revin_settings_url');
-		 
-		$USERNAME= get_option('revin_settings_username');
-		$TOKEN= get_option('revin_settings_token');
-		$SECRET= get_option('revin_settings_secret');    
-		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
-		$TIMESTAMP = time();
-
-		$ENCODED = hash_hmac('sha256', $USERNAME.$TIMESTAMP,$SECRET);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'X-Revinate-Porter-Key:' .$TOKEN,
-			'X-Revinate-Porter-Username:' .$USERNAME,
-			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
-			'X-Revinate-Porter-Encoded:' . $ENCODED,
-			
-
-		));
-		global $wpdb;
-			$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews";
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	
-			$http_result = curl_exec($ch);
-			$error = curl_error($ch);
-	
-			$http_code = curl_getinfo($ch );
-	
-			curl_close($ch);
-			$arr =  json_decode($http_result,true);
-			
+	#############My code
+	function rev_install_data(){
+		/*get page number from table*/
+		global $wpdb; 
+		$log_table = $wpdb->prefix . 'revinateLog';
+		//$wpdb->query("SELECT * FROM ".$extra_table);
+		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
+		if($wpdb->num_rows < 1){####no records generated
+			$pageNo = '1';
+		}	
+		else{#### records generated
+			$myrows = json_decode(json_encode($myrows), true);
+			if($myrows[0]['Success'] == 1)####error
+				$pageNo =$myrows[0]['pageNo'];
+			else
+				$pageNo =$myrows[0]['pageNo']+1;
+		}	
+		
+		if($myrows[0]['pageNo'] != $myrows[0]['TotalPage'] || $wpdb->num_rows < 1){
+			$arr = $this->getCurlData($pageNo);####First Time curl called#####
 			$content = $arr['content'];
-			
-			
-
+			$totalPage = $arr['page']['totalPages'];
+			$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`) VALUES('1','".$pageNo."','".$totalPage."','1')");
+			$this->insertReviews($content,$pageNo,$arr['page']['totalPages']);
+		}
+		//$pgNoLimit = $arr['page']['totalPages'];
 		
-		
+			
+	}
+	function insertReviews($content,$pg,$totalP){
+		global $wpdb;
+		if(isset($content)){
 		foreach($content as $val){
 
 			$title = $val['title'];
@@ -132,7 +128,7 @@ class Revinate {
 			$post_id = wp_insert_post(array (
 				'post_type' => 'revinate_reviews',
 				'post_title' => $val['title'],
-				'post_content' => $val['language']['englishName'],
+				'post_content' => $val['body'],
 				'post_status' => 'publish',
 				'comment_status' => 'closed',   // if you prefer
 				'ping_status' => 'closed',      // if you prefer
@@ -141,9 +137,10 @@ class Revinate {
 			
 			if ($post_id) {
 				// insert post meta
-				add_post_meta($post_id, 'title', $val['title']);
+				add_post_meta($post_id, 'title', $val['title'].$pg);
 				add_post_meta($post_id, 'link', $val['links'][0]['href']);
 				add_post_meta($post_id, 'author', $val['author']);
+				add_post_meta($post_id, 'authorlocation', $val['authorLocation']);
 				add_post_meta($post_id, 'rating', $val['rating']);
 				add_post_meta($post_id, 'language', $val['language']['englishName']);
 				add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
@@ -157,15 +154,52 @@ class Revinate {
 				add_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
 				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
 				add_post_meta($post_id, 'numbers', $val['page']['number']);
+				$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`) VALUES('1','".$pg."','".$totalP."','0') ON DUPLICATE KEY UPDATE pageNo ='".$pg."', Success = 0");
 			}
 			
 		}
+		/*If everything gets inserted*/
+		//$extra_table = $wpdb->extra;
+		}
+	}	
+	function getCurlData($pageNo){
 		
 		
-		
+	        $hotelId = get_option('revin_settings_url'); 
+		$USERNAME= get_option('revin_settings_username');
+		$TOKEN= get_option('revin_settings_token');
+		$SECRET= get_option('revin_settings_secret');    
+		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
+		$TIMESTAMP = time();
 
+		$ENCODED = hash_hmac('sha256', $USERNAME.$TIMESTAMP,$SECRET);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'X-Revinate-Porter-Key:' .$TOKEN,
+			'X-Revinate-Porter-Username:' .$USERNAME,
+			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
+			'X-Revinate-Porter-Encoded:' . $ENCODED,
+			
+
+		));
+		$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews?page=".$pageNo;
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+		$http_result = curl_exec($ch);
+		$error = curl_error($ch);
+
+		$http_code = curl_getinfo($ch );
+
+		curl_close($ch);
+		
+		$arr =  json_decode($http_result,true);
+		return $arr;
+		//print_r($arr);exit();
 	}
-
+	#############My code
 }
 	
 	/**
@@ -241,10 +275,15 @@ class Revinate {
 
 		// Get the data if its already been entered
 	
-		
-			$title = get_post_meta($post->ID, 'title', true);
+			/*if(!empty(get_post_meta($post->ID, 'title', true)))
+				$title = get_post_meta($post->ID, 'title', true);
+			else
+				$title = 'No Title';
+				*/
+			
 			$link = get_post_meta($post->ID, 'link', true);
 			$author = get_post_meta($post->ID, 'author', true);
+			$authorloc = get_post_meta($post->ID, 'authorlocation', true);
 			$language = get_post_meta($post->ID, 'language', true);
 			$rating = get_post_meta($post->ID, 'rating', true);
 			$subratings = get_post_meta($post->ID, 'subratings', true);
@@ -257,12 +296,14 @@ class Revinate {
 
 
 		// Echo out the field
-			echo '<p>Title:</p>';
-			echo '<input type="text" name="title" value="' . $title  . '" class="widefat" />';
+			//echo '<p>Title:</p>';
+			//echo '<input type="text" name="title" value="' . $title  . '" class="widefat" />';
 			echo '<p>Link</p>';
 			echo '<input type="text" name="link" value="' . $link  . '" class="widefat" />';
 			echo '<p>Author</p>';
 			echo '<input type="text" name="author" value="' . $author  . '" class="widefat" />';
+			echo '<p>Author Location</p>';
+			echo '<input type="text" name="author" value="' . $authorloc  . '" class="widefat" />';
 			echo '<p>Language</p>';
 			echo '<input type="text" name="language" value="' . $language  . '" class="widefat" />';
 			echo '<p>Rating</p>';
