@@ -92,14 +92,15 @@ class Revinate {
 
 
 	
+	
 	/**
 	 * Includes files
 	 */
 	function includes() {
 
-        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
-        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport/js/star.js');
-        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport/css/star.css');
+        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
+        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
+        wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
 
 		//include  dirname( __FILE__ )  . '/admin/snh_rating.php';
 
