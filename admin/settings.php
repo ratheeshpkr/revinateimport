@@ -1,6 +1,6 @@
 <?php
 	function my_custom_fonts() {
-	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport/css/star.css');
+	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-import/css/star.css');
 	}
 	add_action('admin_head', 'my_custom_fonts');
 	
