@@ -52,46 +52,154 @@ class Revinate {
 	 * Table to be created while installing
 	 */
 
-	function rev_install() {
+		function rev_install() {
+		
+			ob_start();
 	
-		ob_start();
+			global $db_version;
+			$db_version = '1.0';
+	
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'revinateLog';
+			$sql = "CREATE TABLE $table_name (id int(11) NOT NULL AUTO_INCREMENT,
+			pageNo int(11) NOT NULL,
+			TotalPage int(11) NOT NULL,
+			Success int(11) NOT NULL,
+			whr varchar(20) NOT NULL,
+			UNIQUE KEY id (id))";
+			require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
+			dbDelta( $sql );
+			add_option( 'db_version', $db_version );
+	
+		}
 
-		global $db_version;
-		$db_version = '1.0';
-
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'revinateLog';
-		$sql = "CREATE TABLE $table_name (id int(11) NOT NULL AUTO_INCREMENT,
-		pageNo int(11) NOT NULL,
-		TotalPage int(11) NOT NULL,
-		Success int(11) NOT NULL,
-		UNIQUE KEY id (id))";
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
-		dbDelta( $sql );
-
-		add_option( 'db_version', $db_version );
-
-	}
-
-	/**
-	 *
-	 *	Connection String for Revinate API
-	 *  Inserting Json Values from API
-	 */
+		
 	
 }
-
-
-#############My code
+	############Cron file for saving reviews Starts###########
 	function rev_install_data(){
+		global $wpdb;
 		
+		/*get page number from table*/
+		$log_table = $wpdb->prefix . 'revinateLog';
+		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
+		
+		if($wpdb->num_rows < 1){####no records generated
+			$pageNo = '1';
+		}	
+		else{#### records generated
+			$myrows = json_decode(json_encode($myrows), true);
+			if($myrows[0]['Success'] == 1)####error
+				$pageNo =$myrows[0]['pageNo'];
+			else
+				$pageNo =$myrows[0]['pageNo']+1;
+		}	
+		
+		if($myrows[0]['pageNo'] != $myrows[0]['TotalPage'] || $wpdb->num_rows < 1){#### If page number is less than total no. of pages OR It is first record(No records)######
+			
+			$arr = getCurlData($pageNo);####curl called#####
+			$content = $arr['content'];
+			 $totalPage = $arr['page']['totalPages'];
+			#########Insert data for saving log of files##############
+			$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pageNo."','".$totalPage."','1','init') ON DUPLICATE KEY UPDATE pageNo ='".$pageNo."', Success = 1,TotalPage = '".$totalPage."',whr = 'init'");
+			//$wpdb->show_errors();$wpdb->print_error();die();
+
+			insertReviews($content,$pageNo,$arr['page']['totalPages']);#########Insert reviews##############
+		}	
 	}
-	#############My code
+	function insertReviews($content,$pg,$totalP){#########Insert reviews##############
+		global $wpdb;
+		if(isset($content)){
+		foreach($content as $val){
 
+			$title = $val['title'];
 
+			if(!isset($title)){
+				$title = "";
+			}
+			
+			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
+			$pageposts = $wpdb->get_results($querystr, OBJECT);
+			
+			if(count($pageposts) > 0){
+				continue;
+			}
 
+			$post_id = wp_insert_post(array (
+				'post_type' => 'revinate_reviews',
+				'post_title' => $val['title'],
+				'post_content' => $val['body'],
+				'post_status' => 'publish',
+				'comment_status' => 'closed',   // if you prefer
+				'ping_status' => 'closed',      // if you prefer
+			));
+			
+			
+			if ($post_id) {
+				// insert post meta
+				add_post_meta($post_id, 'title', $val['title']);
+				add_post_meta($post_id, 'link', $val['links'][0]['href']);
+				add_post_meta($post_id, 'author', $val['author']);
+				add_post_meta($post_id, 'authorlocation', $val['authorLocation']);
+				add_post_meta($post_id, 'rating', $val['rating']);
+				add_post_meta($post_id, 'language', $val['language']['englishName']);
+				add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
+				add_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
+				add_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
+				add_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
+				add_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
+				add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
+				add_post_meta($post_id, 'triptype', $val['tripType']);
+				add_post_meta($post_id, 'pagesize', $val['page']['size']);
+				add_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
+				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
+				add_post_meta($post_id, 'numbers', $val['page']['number']); 
+				$log_table = $wpdb->prefix . 'revinateLog';
+				$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pg."','".$totalP."','0','botom') ON DUPLICATE KEY UPDATE pageNo ='".$pg."', Success = 0 ,TotalPage = '".$totalP."',whr = 'botom'");
+			 //$wpdb->show_errors();$wpdb->print_error();die();
+				}
+			
+			}
+		
+		}
+	}	
+	function getCurlData($pageNo){#########Call Curl##############
+	        $hotelId = get_option('revin_settings_url'); 
+		$USERNAME= get_option('revin_settings_username');
+		$TOKEN= get_option('revin_settings_token');
+		$SECRET= get_option('revin_settings_secret');    
+		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
+		$TIMESTAMP = time();
 
-	
+		$ENCODED = hash_hmac('sha256', $USERNAME.$TIMESTAMP,$SECRET);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_VERBOSE, TRUE);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'X-Revinate-Porter-Key:' .$TOKEN,
+			'X-Revinate-Porter-Username:' .$USERNAME,
+			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
+			'X-Revinate-Porter-Encoded:' . $ENCODED,
+			
+
+		));
+		$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews?page=".$pageNo;
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+		$http_result = curl_exec($ch);
+		$error = curl_error($ch);
+
+		$http_code = curl_getinfo($ch );
+
+		curl_close($ch);
+		
+		$arr =  json_decode($http_result,true);
+		return $arr;
+	}
+			
+	############Cron file for saving reviews Ends###########			
+
 	
 	/**
 	 * Includes files
@@ -271,13 +379,28 @@ class Revinate {
 
 	/***
 		Cron For API
-
 	*/
+	
+
+	
+	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
+	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
+	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
+	//register_activation_hook( __FILE__, array( 'Revinate','rev_install_data') );
+	
+	/*function my_activation() {
+	wp_schedule_event(time(), 'hourly', 'my_hourly_event');
+	}
+	*/
+	/**
+		Single Page Template
+	*/
+
 	add_filter('cron_schedules', 'add_scheduled_interval');
 
 	// add once 5 minute interval to wp schedules
 	function add_scheduled_interval($schedules) {
-		$schedules['minutes_5'] = array('interval'=>300, 'display'=>'Once 5 minutes');
+		$schedules['minutes_5'] = array('interval'=>600, 'display'=>'Once in a minute');
 		return $schedules;
 	}
 
@@ -286,19 +409,8 @@ class Revinate {
 	}
 
 	add_action('cron_revinate_pull', 'rev_install_data');
-	/**
-	 * Hooks for activation of plugin
-	 */
-
-	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
-	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
-	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
-	register_activation_hook( __FILE__, array( 'Revinate','rev_install_data') );
-
-	/**
-		Single Page Template
-	*/
-
+// add once 5 minute interval to wp schedules
+	
 	function cd_display($single_templat)
 	{
 		global $wpdb;
