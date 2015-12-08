@@ -13,53 +13,52 @@
 	if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 	get_header( 'snhotel' );
-	
-	do_action( 'snhotel_before_main_content' ); 
+
+	do_action( 'snhotel_before_main_content' );
 		global $post;
 		global $wpdb;
 	?>
 
-	<div class="container">		
+	<div class="container">
 		<?php
 		if(!empty(get_post_meta(get_the_ID(), 'title', true))){
-			$meta_avail = get_post_meta(get_the_ID(), 'title', true);
+			$meta_title = get_post_meta(get_the_ID(), 'title', true);
 		}
 		else{
-			$meta_avail = '';
+			$meta_title = '';
 		}
-		echo '<strong>Title:</strong>'.$meta_avail;  
+		echo '<strong>Title:</strong>'.$meta_title;
 		echo '</br>';
-		echo '<strong>Author:</strong>'.$meta_leadTime = get_post_meta(get_the_ID(),'author', true); 
+		echo '<strong>Author:</strong>'.get_post_meta(get_the_ID(),'author', true);
 		echo '</br>';
-		echo '<strong>Author Location:</strong>'.$meta_location = get_post_meta(get_the_ID(),'authorlocation', true); 
+		echo '<strong>Author Location:</strong>'.get_post_meta(get_the_ID(),'authorlocation', true);
 		echo '</br>';
-		echo '<strong>Link:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'link', true); 
+		echo '<strong>Link:</strong>'.get_post_meta(get_the_ID(),'link', true);
 		echo '</br>';
-		echo '<strong>Language:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'language', true); 
+		echo '<strong>Language:</strong>'.get_post_meta(get_the_ID(),'language', true);
 		echo '</br>';
 		echo '<strong>Rating:</strong>';
-		$meta_offerPrice = get_post_meta(get_the_ID(),'rating', true); 
-		echo '<span class="stars">'.$meta_offerPrice.'</span></br>';
-		echo '<strong>Subratings:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'subratings', true); 
+		echo '<span class="stars">'.get_post_meta(get_the_ID(),'rating', true).'</span></br>';
+		echo '<strong>Subratings:</strong>'.get_post_meta(get_the_ID(),'subratings', true);
 		echo '</br>';
-		echo '<strong>Rooms:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'roomsubratings', true); 
+		echo '<strong>Rooms:</strong>'.get_post_meta(get_the_ID(),'roomsubratings', true);
 		echo '</br>';
-		echo '<strong>Cleanliness:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'cleansubratings', true); 
+		echo '<strong>Cleanliness:</strong>'.get_post_meta(get_the_ID(),'cleansubratings', true);
 		echo '</br>';
-		echo '<strong>Hotel Condition:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'hotelsubratings', true); 
+		echo '<strong>Hotel Condition:</strong>'.get_post_meta(get_the_ID(),'hotelsubratings', true);
 		echo '</br>';
-		echo '<strong>Triptype:</strong>'.$meta_offerPrice = get_post_meta(get_the_ID(),'triptype', true); 
+		echo '<strong>Triptype:</strong>'.get_post_meta(get_the_ID(),'triptype', true);
 		echo '</br>';
 		$postmeta = $wpdb->prefix.'postmeta';
 		$avg = $wpdb->get_results("select AVG(meta_value) as Average from $postmeta where meta_key='rating'");
 		echo 'Average: '.array_shift($avg)->Average;
-		
+
 		?>
 	</div>
-	 <?php 
+	 <?php
 	 dynamic_sidebar( 'room-sidebar' ); ?>
 
-       <!-- .snhotel-col-3 .sidebar -->
+    <!-- .snhotel-col-3 .sidebar -->
     <?php do_action( 'snhotel_after_main_content' ); ?>
 
     <?php do_action( 'snhotel_sidebar' ); ?>
