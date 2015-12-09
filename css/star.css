@@ -7,7 +7,6 @@ span.stars, span.stars span {
     width: 80px;
     height: 16px;
 }
-.inline hide-if-no-js {display:none!important}
 
 span.stars span {
     background-position: 0 0;
