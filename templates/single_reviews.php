@@ -3,32 +3,23 @@
 /**
  * The Template for displaying all single event.
  *
- * Override this template by copying it to yourtheme/snhotel/single-event.php
+ * Override this template by copying it to yourtheme/revinate/single-event.php
  *
  * @author      Sakha
- * @package     Snhotel/Templates
+ * @package     Revinate/Templates
  * @version     0.1
  */
 
 	if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-	get_header( 'snhotel' );
-
-	do_action( 'snhotel_before_main_content' );
+	get_header();
+	do_action( 'revinate_before_main_content' );
 		global $post;
 		global $wpdb;
 	?>
 
 	<div class="container">
 		<?php
-		if(!empty(get_post_meta(get_the_ID(), 'title', true))){
-			$meta_title = get_post_meta(get_the_ID(), 'title', true);
-		}
-		else{
-			$meta_title = '';
-		}
-		echo '<strong>Title:</strong>'.$meta_title;
-		echo '</br>';
 		echo '<strong>Author:</strong>'.get_post_meta(get_the_ID(),'author', true);
 		echo '</br>';
 		echo '<strong>Author Location:</strong>'.get_post_meta(get_the_ID(),'authorlocation', true);
@@ -58,9 +49,9 @@
 	 <?php
 	 dynamic_sidebar( 'room-sidebar' ); ?>
 
-    <!-- .snhotel-col-3 .sidebar -->
-    <?php do_action( 'snhotel_after_main_content' ); ?>
 
-    <?php do_action( 'snhotel_sidebar' ); ?>
+   
 
-<?php get_footer( 'snhotel' ); ?>
+   
+
+<?php get_footer(); ?>

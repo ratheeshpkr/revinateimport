@@ -9,7 +9,7 @@
  * @version     0.1
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-get_header( 'snhotel' ); ?>
+get_header(); ?>
 
         <?php 	while ( have_posts() ) : the_post();
 				global $post;
@@ -53,11 +53,10 @@ get_header( 'snhotel' ); ?>
 
         <?php endwhile; // end of the loop.
 	previous_posts_link();echo "&nbsp;&nbsp";
-  next_posts_link();
+        next_posts_link();
 	?>
 
 
 
-<?php do_action( 'snhotel_sidebar' ); ?>
 
-<?php get_footer( 'snhotel' ); ?>
+<?php get_footer(); ?>
