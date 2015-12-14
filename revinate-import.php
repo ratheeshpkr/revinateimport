@@ -147,23 +147,23 @@ class Revinate {
 			
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
-				add_post_meta($post_id, 'title', $val['title']);
-				add_post_meta($post_id, 'link', $val['links'][0]['href']);
-				add_post_meta($post_id, 'author', $val['author']);
-				add_post_meta($post_id, 'authorlocation', $val['authorLocation']);
-				add_post_meta($post_id, 'rating', $val['rating']);
-				add_post_meta($post_id, 'language', $val['language']['englishName']);
-				add_post_meta($post_id, 'subratings', $val['subratings']['Service']);
-				add_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
-				add_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
-				add_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
-				add_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
-				add_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
-				add_post_meta($post_id, 'triptype', $val['tripType']);
-				add_post_meta($post_id, 'pagesize', $val['page']['size']);
-				add_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
-				add_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
-				add_post_meta($post_id, 'numbers', $val['page']['number']);
+				update_post_meta($post_id, 'title', $val['title']);
+				update_post_meta($post_id, 'link', $val['links'][0]['href']);
+				update_post_meta($post_id, 'author', $val['author']);
+				update_post_meta($post_id, 'authorlocation', $val['authorLocation']);
+				update_post_meta($post_id, 'rating', $val['rating']);
+				update_post_meta($post_id, 'language', $val['language']['englishName']);
+				update_post_meta($post_id, 'subratings', $val['subratings']['Service']);
+				update_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
+				update_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
+				update_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
+				update_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
+				update_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
+				update_post_meta($post_id, 'triptype', $val['tripType']);
+				update_post_meta($post_id, 'pagesize', $val['page']['size']);
+				update_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
+				update_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
+				update_post_meta($post_id, 'numbers', $val['page']['number']);
 				
 				/*Entry in to log table for successful entry in post meta*/
 				$log_table = $wpdb->prefix . 'revinateLog';
@@ -241,7 +241,7 @@ class Revinate {
 		'public' => true,
 		'query_var' => 'reviews',
 		'rewrite' => array(
-			'slug' => 'revinate_reviews',
+			'slug' => 'revinate',
 			'with_front' => false
 		),
 		'has_archive'        => true,
@@ -265,6 +265,7 @@ class Revinate {
 		),
 
 		);
+		flush_rewrite_rules();
 		/*register the post type*/
 		register_post_type( 'revinate_reviews', $reviews_args );
 
@@ -416,7 +417,7 @@ class Revinate {
 
 	/* add once 10 minute interval to wp schedules*/
 	function add_scheduled_interval($schedules) {
-		$schedules['minutes_10'] = array('interval'=>600, 'display'=>'Once in a span of 10 minutes');
+		$schedules['minutes_10'] = array('interval'=>300, 'display'=>'Once in a span of 10 minutes');
 		return $schedules;
 	}
 
