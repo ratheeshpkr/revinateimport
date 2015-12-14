@@ -21,7 +21,7 @@ class Revinate {
 			// do not generate any output here
 		 }
 
-		
+
 	/*
 	 * Deactivation of Plugin
 	 */
@@ -32,7 +32,7 @@ class Revinate {
 			$postmeta_table = $wpdb->postmeta;
 			$posts_table = $wpdb->posts;
 			$option_table = $wpdb->options;
-			
+
 			$log_table = $wpdb->prefix . 'revinateLog';
 			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
@@ -50,12 +50,12 @@ class Revinate {
 	 */
 
 		function rev_install() {
-		
+
 			ob_start();
-	
+
 			global $db_version;
 			$db_version = '1.0';
-	
+
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'revinateLog';
 			$sql = "CREATE TABLE $table_name (id int(11) NOT NULL AUTO_INCREMENT,
@@ -67,7 +67,7 @@ class Revinate {
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta( $sql );
 			add_option( 'db_version', $db_version );
-	
+
 		}
 
 }
@@ -80,35 +80,35 @@ class Revinate {
 	 */
 	function rev_install_data(){
 		global $wpdb;
-		
+
 		/*Used to create log i.e. which page number of API should be initiated*/
 		$log_table = $wpdb->prefix . 'revinateLog';
 		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
-		
+
 		/* Check which page number to be called for API*/
 		if($wpdb->num_rows < 1){
 			$pageNo = '1';
-		}	
+		}
 		else{
 			$myrows = json_decode(json_encode($myrows), true);
 			if($myrows[0]['Success'] == 1)
 				$pageNo =$myrows[0]['pageNo'];
 			else
 				$pageNo =$myrows[0]['pageNo']+1;
-		}	
-		
+		}
+
 		/*Check Condition when to call API*/
 		if($myrows[0]['pageNo'] != $myrows[0]['TotalPage'] || $wpdb->num_rows < 1){
-			
+
 			$arr = getCurlData($pageNo);/*Call API*/
 			$content = $arr['content'];
 			$totalPage = $arr['page']['totalPages'];
-			
+
 			$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pageNo."','".$totalPage."','1','init') ON DUPLICATE KEY UPDATE pageNo ='".$pageNo."', Success = 1,TotalPage = '".$totalPage."',whr = 'init'");
 			insertReviews($content,$pageNo,$arr['page']['totalPages']);/*Insert Review*/
-		}	
+		}
 	}
-	
+
 	/*
 	 * It is used to insert reviews
 	 * to the database.
@@ -127,10 +127,10 @@ class Revinate {
 			if(!isset($title)){
 				$title = "";
 			}
-			
+
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
-			
+
 			if(count($pageposts) > 0){
 				continue;
 			}
@@ -140,11 +140,11 @@ class Revinate {
 				'post_title' => $val['title'],
 				'post_content' => $val['body'],
 				'post_status' => 'publish',
-				'comment_status' => 'closed',  
-				'ping_status' => 'closed',     
+				'comment_status' => 'closed',
+				'ping_status' => 'closed',
 			));
-			
-			
+
+
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
 				update_post_meta($post_id, 'title', $val['title']);
@@ -164,17 +164,17 @@ class Revinate {
 				update_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
 				update_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
 				update_post_meta($post_id, 'numbers', $val['page']['number']);
-				
+
 				/*Entry in to log table for successful entry in post meta*/
 				$log_table = $wpdb->prefix . 'revinateLog';
 				$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pg."','".$totalP."','0','bottom') ON DUPLICATE KEY UPDATE pageNo ='".$pg."', Success = 0 ,TotalPage = '".$totalP."',whr = 'bottom'");
 				}
-			
+
 			}
-		
+
 		}
 	}
-	
+
 	/*
 	 * It is used to Call API
 	 * using curl
@@ -185,10 +185,10 @@ class Revinate {
 	 */
 	function getCurlData($pageNo){
 		/*Get API details from post table*/
-	        $hotelId = get_option('revin_settings_url'); 
+	        $hotelId = get_option('revin_settings_url');
 		$USERNAME= get_option('revin_settings_username');
 		$TOKEN= get_option('revin_settings_token');
-		$SECRET= get_option('revin_settings_secret');    
+		$SECRET= get_option('revin_settings_secret');
 		$kSecret = crypt($SECRET,$const.substr(sha1(mt_rand()), 0, 22));
 		$TIMESTAMP = time();
 
@@ -201,7 +201,7 @@ class Revinate {
 			'X-Revinate-Porter-Username:' .$USERNAME,
 			'X-Revinate-Porter-Timestamp:' .$TIMESTAMP,
 			'X-Revinate-Porter-Encoded:' . $ENCODED,
-			
+
 
 		));
 		$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews?page=".$pageNo;
@@ -214,12 +214,12 @@ class Revinate {
 		$http_code = curl_getinfo($ch );
 
 		curl_close($ch);
-		
+
 		$arr =  json_decode($http_result,true);
 		return $arr;
 	}
-			
-			
+
+
 	/*
 	 * Includes CSS and Js files
 	 */
@@ -253,12 +253,12 @@ class Revinate {
 		),
 		'labels' => array(
 			'name' => 'Revinate',
-            'singular_name' => 'Reviews',
-			'add_new' => 'Add Reviews',
-			'add_new_item' => 'Add Reviews',
-			'edit_item' => 'Edit Reviews',
-			'new_item' => 'New Reviews',
-			'view_item' => 'View Reviews',
+      'singular_name' => 'Review',
+			'add_new' => 'Add Review',
+			'add_new_item' => 'Add Review',
+			'edit_item' => 'Edit Review',
+			'new_item' => 'New Review',
+			'view_item' => 'View Review',
 			'search_items' => 'Search Reviews',
 			'not_found' => 'No Reviews Found',
 			'not_found_in_trash' => 'No Reviews Found in Trash'
@@ -271,15 +271,15 @@ class Revinate {
 
 		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
 	}
-	
-	
+
+
 
 	/* Add the Revinate Reviews Meta Boxes*/
 
 		function add_reviews_metaboxes() {
 			add_meta_box('wpt_reviews_location', 'Revinate Reviews', 'wpt_reviews_location', 'revinate_reviews', 'normal', 'default');
 		}
-	
+
 	/*The Revinate Reviews Metabox
 	 *get all the reviews from db
 	 *and print them
@@ -332,17 +332,17 @@ class Revinate {
 			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
 
 	}
-	
+
 	/*Update all the reviews and
 	 *save it to database
 	*/
 	add_action( 'save_post', 'myplugin_save_postdata' );
-	
+
 	function myplugin_save_postdata( $post_id ) {
 		update_post_meta( $post_id,'title',$_POST['title']);
 		update_post_meta( $post_id,'link',$_POST['link']);
 		update_post_meta( $post_id,'author',$_POST['author']);
-		
+
 		update_post_meta( $post_id,'authorlocation',$_POST['authorlocation']);
 		update_post_meta( $post_id,'language',$_POST['language']);
 		update_post_meta( $post_id,'rating',$_POST['rating']);
@@ -353,7 +353,7 @@ class Revinate {
 		update_post_meta( $post_id,'hotelsubratings',$_POST['hotelsubratings']);
 		update_post_meta( $post_id,'triptype',$_POST['triptype']);
 		update_post_meta( $post_id,'subratings',$_POST['subratings']);
-		
+
 	}
 
 	function myplugin_register_settings() {
@@ -370,7 +370,7 @@ class Revinate {
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
 
-	
+
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
 		  register_setting( 'myplugin_options_group', 'revin_settings_url' );
@@ -382,7 +382,7 @@ class Revinate {
 
 	function view_shortcode(){
 		global $wpdb;
-	   
+
 		$querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'revinate_reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
 		$pageposts = $wpdb->get_results($querystr);
 		foreach($pageposts as $val){
@@ -403,13 +403,13 @@ class Revinate {
 	}
 	add_action( 'init', 'register_shortcodes');
 
-	
+
 	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
 	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
 	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
-	
-	
-	
+
+
+
 	/*
 	* Set cron for calling API and saving reviews
 	*/
@@ -427,8 +427,8 @@ class Revinate {
 
 	add_action('cron_revinate_pull', 'rev_install_data');
 
-	
-	
+
+
 	function cd_display($single_templat)
 	{
 		global $wpdb;
@@ -442,12 +442,12 @@ class Revinate {
 			}
 
 			return $single_templat;
-		} 
-		
+		}
+
 	}
-	
+
 	add_filter( 'single_template', 'cd_display' );
-	
+
 	/**
 		Archive Page Template
 	*/
@@ -460,31 +460,31 @@ class Revinate {
 		return $archive_template;
 	}
 	add_filter('archive_template', 'get_custom_post_type_template');
-	
+
 	add_action("manage_revinate_reviews_posts_custom_column",  "revinate_custom_columns");
 	add_filter("manage_revinate_reviews_posts_columns", "revinate_edit_columns");
-	 
+
 	function revinate_edit_columns($columns){
 	  $columns = array(
 		"cb" => "<input type='checkbox' />",
-		"title" => "Reviews Title",
+		"title" => "Review Title",
 		"rating" => "Rating",
 		"language" => "Language",
 		"triptype" => "Trip Type",
-		"date" => "Date",	
+		"date" => "Date",
 	  );
-	 
+
 	  return $columns;
 	}
-	
+
 	function revinate_custom_columns($column){
 	  global $post;
-	 
+
 	  switch ($column) {
 		case "rating":
 		  $custom = get_post_custom( $post_id, 'rating', true );
-		  echo  $custom['rating'][0]; 
-		  break;  
+		  echo  $custom['rating'][0];
+		  break;
 		case "language":
 		  $custom = get_post_custom();
 		  echo $custom["language"][0];
