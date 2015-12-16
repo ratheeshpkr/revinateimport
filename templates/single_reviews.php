@@ -12,8 +12,8 @@
 
 	if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-	get_header();
-	do_action( 'revinate_before_main_content' );
+	
+	//do_action( 'revinate_before_main_content' );
 		global $post;
 		global $wpdb;
 	?>
