@@ -240,6 +240,7 @@ class Revinate {
 	$reviews_args = array(
 		'public' => true,
 		'query_var' => 'reviews',
+		'query_var' => 'reviews',
 		'rewrite' => array(
 			'slug' => 'revinate',
 			'with_front' => false
@@ -503,3 +504,67 @@ class Revinate {
 		  break;
 	  }
 	}
+	
+		
+function review_shortcode()
+{
+  $type = 'revinate_reviews';
+  $args=array
+  (
+    'post_type' => $type,
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+    'caller_get_posts'=> 4,
+  );
+
+  $my_query = new WP_Query($args);
+  if( $my_query->have_posts() )
+  {
+    while ($my_query->have_posts()) : $my_query->the_post();  
+    ?>                                  
+    <div class="review">
+      <div class="col-xs-12 review-header">
+          <div class="col-xs-6 no-padding">
+            <a href="<?php the_permalink() ?>" rel="bookmark" title="Permanent Link to <?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+          </div>
+          <div class="col-xs-6 no-padding">
+            <div class="review-star-bg"></div>
+            <div class="review-star" data-value="3.5">
+                <?php 
+                    $meta_offerPrice = get_post_meta(get_the_ID(),'rating', true); 
+                    echo '<span class="stars">'.$meta_offerPrice.'</span>';
+                ?>
+            </div>
+          </div>
+      </div>
+      <div class="col-xs-12 review-body">
+          <div class="col-xs-12 quote">
+              <span>
+              <?php 
+              $content = get_the_content();
+              echo substr($content, 0, 150).'...'; 
+              ?>
+              </span>
+          </div>
+          <div class="col-xs-12">
+              <div class="col-xs-2 no-padding">
+                  <img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
+              </div>
+              <div class="col-xs-10">
+                <span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
+                <span class="review-date"><?php the_date(); ?></span>
+                <span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+              </div>
+          </div>
+      </div>
+    </div>
+    <?php
+    endwhile;
+  }
+      //wp_reset_query();  // Restore global post data stomped by the_post().
+  ?>
+<?php
+}
+add_shortcode( 'review', 'review_shortcode' );
+
+
