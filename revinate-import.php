@@ -240,9 +240,8 @@ class Revinate {
 	$reviews_args = array(
 		'public' => true,
 		'query_var' => 'reviews',
-		'query_var' => 'reviews',
 		'rewrite' => array(
-			'slug' => 'revinate',
+			'slug' => 'reviews',
 			'with_front' => false
 		),
 		'has_archive'        => true,
@@ -504,8 +503,8 @@ class Revinate {
 		  break;
 	  }
 	}
-	
-		
+
+
 function review_shortcode()
 {
   $type = 'revinate_reviews';
@@ -520,8 +519,8 @@ function review_shortcode()
   $my_query = new WP_Query($args);
   if( $my_query->have_posts() )
   {
-    while ($my_query->have_posts()) : $my_query->the_post();  
-    ?>                                  
+    while ($my_query->have_posts()) : $my_query->the_post();
+    ?>
     <div class="review">
       <div class="col-xs-12 review-header">
           <div class="col-xs-6 no-padding">
@@ -530,8 +529,8 @@ function review_shortcode()
           <div class="col-xs-6 no-padding">
             <div class="review-star-bg"></div>
             <div class="review-star" data-value="3.5">
-                <?php 
-                    $meta_offerPrice = get_post_meta(get_the_ID(),'rating', true); 
+                <?php
+                    $meta_offerPrice = get_post_meta(get_the_ID(),'rating', true);
                     echo '<span class="stars">'.$meta_offerPrice.'</span>';
                 ?>
             </div>
@@ -540,9 +539,9 @@ function review_shortcode()
       <div class="col-xs-12 review-body">
           <div class="col-xs-12 quote">
               <span>
-              <?php 
+              <?php
               $content = get_the_content();
-              echo substr($content, 0, 150).'...'; 
+              echo substr($content, 0, 150).'...';
               ?>
               </span>
           </div>
@@ -566,5 +565,3 @@ function review_shortcode()
 <?php
 }
 add_shortcode( 'review', 'review_shortcode' );
-
-
