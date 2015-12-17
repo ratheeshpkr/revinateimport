@@ -591,10 +591,10 @@ elseif ($a['type'] == "web")
 				?>
 				<div class="review">
 					<div class="col-xs-12 review-header">
-						<div class="col-xs-7 no-padding">
+						<div class="col-xs-6 no-padding">
 							<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
 						</div>
-						<div class="col-xs-5 no-padding">
+						<div class="col-xs-6 no-padding">
 							<div class="review-star-bg"></div>
 							<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
 						</div>
@@ -604,13 +604,12 @@ elseif ($a['type'] == "web")
 						<span>
 							"<?php
 								$content = get_the_content();
-								echo substr($content, 0, 150).'...';
+								echo substr($content, 0, 90).'...';
 							?>
 						"</span>
 					</div>
 					<div class="col-xs-12">
 						<div class="col-xs-2 no-padding">
-		    		<!--	<img src="<?php plugin_dir_url( __FILE__ ) . images/profile.png ?>" alt="" class="review-user-img">-->
 							<?php echo '<img src="' . plugins_url( 'revinateimport-master/images/profile.png', dirname(__FILE__) ) . '" >'; ?>
 						</div>
 						<div class="col-xs-10">
