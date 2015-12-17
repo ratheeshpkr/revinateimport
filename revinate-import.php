@@ -422,7 +422,7 @@ class Revinate {
 	}
 
 	if (!wp_next_scheduled('cron_revinate_pull')) {
-			wp_schedule_event(time(), 'minutes_10', 'cron_revinate_pull');
+			wp_schedule_event(time(), 'daily', 'cron_revinate_pull');
 	}
 
 	add_action('cron_revinate_pull', 'rev_install_data');
