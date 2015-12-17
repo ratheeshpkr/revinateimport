@@ -224,9 +224,9 @@ class Revinate {
 	 * Includes CSS and Js files
 	 */
 	function includes() {
-        wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
-        wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
-	wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
+        //wp_enqueue_script('star-script', site_url().'/wp-content/plugins/revinateimport-master/js/jquery.min.js');
+        //wp_enqueue_script('star-js', site_url().'/wp-content/plugins/revinateimport-master/js/star.js');
+				//wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
 	}
 	add_action('wp_head', 'includes');
 
@@ -422,7 +422,7 @@ class Revinate {
 	}
 
 	if (!wp_next_scheduled('cron_revinate_pull')) {
-			wp_schedule_event(time(), 'daily', 'cron_revinate_pull');
+			wp_schedule_event(time(), 'minutes_10', 'cron_revinate_pull');
 	}
 
 	add_action('cron_revinate_pull', 'rev_install_data');
@@ -570,7 +570,7 @@ function review_shortcode($atts)
       //wp_reset_query();  // Restore global post data stomped by the_post().
   ?>
 			<div class="col-xs-12 no-padding">
-	        <a href="#" class="all-review">
+	        <a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
 	            Read all Reviews
 	        </a>
 	    </div>
@@ -627,7 +627,7 @@ elseif ($a['type'] == "web")
       //wp_reset_query();  // Restore global post data stomped by the_post().
   ?>
 			</div>
-			<a href="#" class="all-review">
+			<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
 				Read all Reviews
 			</a>
 		</div>

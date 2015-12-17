@@ -9,7 +9,7 @@
  * @version     0.1
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-get_header(); ?>
+?>
 
         <?php 	while ( have_posts() ) : the_post();
 				global $post;
@@ -55,8 +55,3 @@ get_header(); ?>
 	previous_posts_link();echo "&nbsp;&nbsp";
         next_posts_link();
 	?>
-
-
-
-
-<?php get_footer(); ?>
