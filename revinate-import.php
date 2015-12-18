@@ -546,14 +546,12 @@ function review_shortcode($atts)
 											</div>
 											<div class="row">
 												<div class="col-xs-6">
-													<span class="review-date"><?php the_date(); ?></span>
+													<span class="review-date"><?php echo get_the_date(); ?></span>
 												</div>
 												<div class="col-xs-6">
 													<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
 												</div>
 											</div>
-
-
 									</div>
 	              </div>
 	              <div class="col-xs-12 review-body">
@@ -608,9 +606,14 @@ elseif ($a['type'] == "web")
 						</div>
 						<div class="col-xs-10">
 			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
-			    			<span class="review-date"><?php the_date(); ?></span>
-								<span class="review-date"><?php the_date(); ?></span>
-			    			<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+								<div class="row">
+										<div class="col-xs-6">
+												<span class="review-date"><?php echo get_the_date(); ?></span>
+										</div>
+										<div class="col-xs-6">
+				    						<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+										</div>
+								</div>
 						</div>
 					</div>
 				<div class="col-xs-12 review-body">
