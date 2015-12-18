@@ -535,13 +535,26 @@ function review_shortcode($atts)
     ?>
 	          <div class="review">
 	              <div class="col-xs-12 review-header">
-	                  <div class="col-xs-7 no-padding">
-											<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
-										</div>
-	                  <div class="col-xs-5 no-padding">
-	                      <div class="review-star-bg"></div>
-	                      <div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
-	                  </div>
+									<div class="col-xs-2 no-padding">
+										<img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
+									</div>
+									<div class="col-xs-10">
+										<div class="row">
+												<div class="col-xs-12">
+													<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-xs-6">
+													<span class="review-date"><?php the_date(); ?></span>
+												</div>
+												<div class="col-xs-6">
+													<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+												</div>
+											</div>
+
+
+									</div>
 	              </div>
 	              <div class="col-xs-12 review-body">
 	                  <div class="col-xs-12 quote">
@@ -553,14 +566,13 @@ function review_shortcode($atts)
 												"</span>
 	                  </div>
 	                  <div class="col-xs-12">
-	                      <div class="col-xs-2 no-padding">
-													<img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
-	                      </div>
-	                      <div class="col-xs-10">
-	                          <span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
-	                          <span class="review-date"><?php the_date(); ?></span>
-	                          <span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
-	                      </div>
+											<div class="col-xs-7 no-padding">
+												<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+											</div>
+											<div class="col-xs-5 no-padding">
+													<div class="review-star-bg"></div>
+													<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
+											</div>
 	                  </div>
 	              </div>
 	          </div>
@@ -591,12 +603,14 @@ elseif ($a['type'] == "web")
 				?>
 				<div class="review">
 					<div class="col-xs-12 review-header">
-						<div class="col-xs-6 no-padding">
-							<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+						<div class="col-xs-2 no-padding">
+							<?php echo '<img src="' . plugins_url( 'revinateimport-master/images/profile.png', dirname(__FILE__) ) . '" >'; ?>
 						</div>
-						<div class="col-xs-6 no-padding">
-							<div class="review-star-bg"></div>
-							<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
+						<div class="col-xs-10">
+			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
+			    			<span class="review-date"><?php the_date(); ?></span>
+								<span class="review-date"><?php the_date(); ?></span>
+			    			<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
 						</div>
 					</div>
 				<div class="col-xs-12 review-body">
@@ -609,13 +623,12 @@ elseif ($a['type'] == "web")
 						"</span>
 					</div>
 					<div class="col-xs-12">
-						<div class="col-xs-2 no-padding">
-							<?php echo '<img src="' . plugins_url( 'revinateimport-master/images/profile.png', dirname(__FILE__) ) . '" >'; ?>
+						<div class="col-xs-6 no-padding">
+							<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
 						</div>
-						<div class="col-xs-10">
-			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
-			    			<span class="review-date"><?php the_date(); ?></span>
-			    			<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+						<div class="col-xs-6 no-padding">
+							<div class="review-star-bg"></div>
+							<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
 						</div>
 					</div>
 				</div>
