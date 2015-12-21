@@ -569,7 +569,7 @@ function review_shortcode($atts)
 						<div class="col-xs-10">
 			    			<span class="review-user-name"><a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></a></span>
 								<div class="row">
-										<div class="col-xs-12">
+										<div class="col-xs-12 padding-right-0">
 											<?php
 													$triptype = "";
 													if(get_post_meta(get_the_ID(),'triptype', true)!=""){
@@ -591,11 +591,11 @@ function review_shortcode($atts)
 							?>
 						"</span>
 					</div>
-					<div class="col-xs-12">
-						<div class="col-xs-6 no-padding">
+					<div class="col-xs-12 margin-top-10">
+						<div class="col-xs-8 no-padding review-site-name">
 							<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>
 						</div>
-						<div class="col-xs-6 no-padding">
+						<div class="col-xs-4 no-padding">
 							<div class="review-star-bg"></div>
 							<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
 						</div>
@@ -608,9 +608,11 @@ function review_shortcode($atts)
 	      //wp_reset_query();  // Restore global post data stomped by the_post().
 	  ?>
 			</div>
-			<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
-				Read all Reviews
-			</a>
+			<div class="col-xs-12">
+				<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
+					Read all Reviews
+				</a>
+			</div>
 		</div>
 	</div>
 <?php
