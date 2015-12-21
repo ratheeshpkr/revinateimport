@@ -36,7 +36,7 @@ class Revinate {
 			$log_table = $wpdb->prefix . 'revinateLog';
 			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
-				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage','numbers','authorlocation')");
+				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage','numbers','authorlocation','datereview','datecollected','reviewsitename')");
 			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
 			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret')");
 			$wpdb->query("DROP TABLE ".$log_table);########log need to be inserted for cron file
@@ -147,6 +147,16 @@ class Revinate {
 
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
+				if(is_null($val['dateReview']))
+					 		$dateReview = '';
+				else
+							$dateReview = date("m/d/Y",$val['dateReview']);
+
+				if(is_null($val['dateCollected']))
+					 		$dateCollected = '';
+				else
+							$dateCollected = date("m/d/Y",$val['dateCollected']);
+
 				update_post_meta($post_id, 'title', $val['title']);
 				update_post_meta($post_id, 'link', $val['links'][0]['href']);
 				update_post_meta($post_id, 'author', $val['author']);
@@ -160,6 +170,12 @@ class Revinate {
 				update_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
 				update_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
 				update_post_meta($post_id, 'triptype', $val['tripType']);
+
+				update_post_meta($post_id, 'datereview', $dateReview);
+				update_post_meta($post_id, 'datecollected', $dateCollected);
+
+				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
+
 				update_post_meta($post_id, 'pagesize', $val['page']['size']);
 				update_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
 				update_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
@@ -185,7 +201,7 @@ class Revinate {
 	 */
 	function getCurlData($pageNo){
 		/*Get API details from post table*/
-	        $hotelId = get_option('revin_settings_url');
+	  $hotelId = get_option('revin_settings_url');
 		$USERNAME= get_option('revin_settings_username');
 		$TOKEN= get_option('revin_settings_token');
 		$SECRET= get_option('revin_settings_secret');
@@ -304,7 +320,9 @@ class Revinate {
 			$hotelsubratings = get_post_meta($post->ID, 'hotelsubratings', true);
 			$locationsubratings = get_post_meta($post->ID, 'locationsubratings', true);
 			$triptype = get_post_meta($post->ID, 'triptype', true);
-
+			$datereview = get_post_meta($post->ID, 'datereview', true);
+			$datecollected = get_post_meta($post->ID, 'datecollected', true);
+			$reviewsitename = get_post_meta($post->ID, 'reviewsitename', true);
 
 		/*Print field*/
 			echo '<p>Link</p>';
@@ -330,7 +348,12 @@ class Revinate {
 			echo '<input type="text" name="hotelsubratings" value="' . $hotelsubratings  . '" class="widefat" />';
 			echo '<p>Triptype</p>';
 			echo '<input type="text" name="triptype" value="' . $triptype  . '" class="widefat" />';
-
+			echo '<p>Review Date</p>';
+			echo '<input type="text" name="datereview" value="' . $datereview  . '" class="cmb_text_small cmb_datepicker" />';
+			echo '<p>Date Collected </p>';
+			echo '<input type="text" name="datecollected" value="' . $datecollected  . '" class="cmb_text_small cmb_datepicker" />';
+			echo '<p>Review Site Name</p>';
+			echo '<input type="text" name="reviewsitename" value="' . $reviewsitename  . '" class="widefat" />';
 	}
 
 	/*Update all the reviews and
@@ -353,7 +376,9 @@ class Revinate {
 		update_post_meta( $post_id,'hotelsubratings',$_POST['hotelsubratings']);
 		update_post_meta( $post_id,'triptype',$_POST['triptype']);
 		update_post_meta( $post_id,'subratings',$_POST['subratings']);
-
+		update_post_meta( $post_id,'datereview',$_POST['datereview']);
+		update_post_meta( $post_id,'datecollected',$_POST['datecollected']);
+		update_post_meta( $post_id,'reviewsitename',$_POST['reviewsitename']);
 	}
 
 	function myplugin_register_settings() {
@@ -471,7 +496,9 @@ class Revinate {
 		"rating" => "Rating",
 		"language" => "Language",
 		"triptype" => "Trip Type",
-		"date" => "Date",
+		"datereview" => "Review Date",
+		"datecollected" => "Collected Date",
+		"reviewsitename" => "Review Site",
 	  );
 
 	  return $columns;
@@ -493,13 +520,17 @@ class Revinate {
 		  $custom = get_post_custom();
 		  echo $custom["triptype"][0];
 		  break;
-		case "date":
+		case "datereview":
 		  $custom = get_post_custom();
-		  echo $custom["date"][0];
+		  echo $custom["datereview"][0];
 		  break;
-		case "":
+		case "datecollected":
 		  $custom = get_post_custom();
-		  echo $custom["triptype"][0];
+		  echo $custom["datecollected"][0];
+		  break;
+		case "reviewsitename":
+		  $custom = get_post_custom();
+		  echo $custom["reviewsitename"][0];
 		  break;
 	  }
 	}
@@ -510,7 +541,6 @@ function review_shortcode($atts)
 	  $type = 'revinate_reviews';
 
 		$a = shortcode_atts( array(
-        'type' => 'attribute 2 default',
 				'count' => 'attribute 2 default',
     ), $atts );
 
@@ -521,74 +551,6 @@ function review_shortcode($atts)
 	    'posts_per_page' => $a['count'],
 			//'caller_get_posts' => 4,
 	  );
-
-	if($a['type'] == "mobile")
-	{
-	?>
-	<div class="col-xs-12 mobile-reviews-wrapper">
-	<?php
-  $my_query = new WP_Query($args);
-  if( $my_query->have_posts() )
-  {
-    while ($my_query->have_posts()) : $my_query->the_post();
-
-    ?>
-	          <div class="review">
-	              <div class="col-xs-12 review-header">
-									<div class="col-xs-2 no-padding">
-										<img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
-									</div>
-									<div class="col-xs-10">
-										<div class="row">
-												<div class="col-xs-12">
-													<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
-												</div>
-											</div>
-											<div class="row">
-												<div class="col-xs-6">
-													<span class="review-date"><?php echo get_the_date(); ?></span>
-												</div>
-												<div class="col-xs-6">
-													<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
-												</div>
-											</div>
-									</div>
-	              </div>
-	              <div class="col-xs-12 review-body">
-	                  <div class="col-xs-12 quote">
-	                      <span>
-													"<?php
-						            			$content = get_the_content();
-						            			echo substr($content, 0, 150).'...';
-						            	?>
-												"</span>
-	                  </div>
-	                  <div class="col-xs-12">
-											<div class="col-xs-7 no-padding">
-												<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
-											</div>
-											<div class="col-xs-5 no-padding">
-													<div class="review-star-bg"></div>
-													<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
-											</div>
-	                  </div>
-	              </div>
-	          </div>
-    <?php
-    endwhile;
-  }
-      //wp_reset_query();  // Restore global post data stomped by the_post().
-  ?>
-			<div class="col-xs-12 no-padding">
-	        <a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
-	            Read all Reviews
-	        </a>
-	    </div>
-	</div>
-<?php
-}
-elseif ($a['type'] == "web")
-{
 	?>
 	<div id="reviews-wrapper">
 		<div class="reviews" data-current-index="0">
@@ -602,32 +564,36 @@ elseif ($a['type'] == "web")
 				<div class="review">
 					<div class="col-xs-12 review-header">
 						<div class="col-xs-2 no-padding">
-							<?php echo '<img src="' . plugins_url( 'revinateimport-master/images/profile.png', dirname(__FILE__) ) . '" >'; ?>
+								<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img"></a>
 						</div>
 						<div class="col-xs-10">
-			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
+			    			<span class="review-user-name"><a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></a></span>
 								<div class="row">
-										<div class="col-xs-6">
-												<span class="review-date"><?php echo get_the_date(); ?></span>
-										</div>
-										<div class="col-xs-6">
-				    						<span class="review-trip-type">Trip type: <?php echo get_post_meta(get_the_ID(),'triptype', true); ?></span>
+										<div class="col-xs-12">
+											<?php
+													$triptype = "";
+													if(get_post_meta(get_the_ID(),'triptype', true)!=""){
+														$triptype = "Trip type: ".get_post_meta(get_the_ID(),'triptype', true);
+													}//date_format(strtotime(get_post_meta(get_the_ID(),'datereview', true)), 'M j, Y')
+											?>
+												<span class="review-date"><?php echo date( 'M j, Y', strtotime(get_post_meta(get_the_ID(),'datereview', true)));  ?></span> &nbsp;	<span class="review-trip-type"><?php echo $triptype; ?></span>
 										</div>
 								</div>
 						</div>
 					</div>
-				<div class="col-xs-12 review-body">
+ 					<div class="col-xs-12 review-body">
 					<div class="col-xs-12 quote">
 						<span>
 							"<?php
 								$content = get_the_content();
+								//if length is less than 90 dont add ...
 								echo substr($content, 0, 90).'...';
 							?>
 						"</span>
 					</div>
 					<div class="col-xs-12">
 						<div class="col-xs-6 no-padding">
-							<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
+							<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>
 						</div>
 						<div class="col-xs-6 no-padding">
 							<div class="review-star-bg"></div>
@@ -638,9 +604,9 @@ elseif ($a['type'] == "web")
 		</div>
 		<?php
     endwhile;
-  }
-      //wp_reset_query();  // Restore global post data stomped by the_post().
-  ?>
+	  }
+	      //wp_reset_query();  // Restore global post data stomped by the_post().
+	  ?>
 			</div>
 			<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
 				Read all Reviews
@@ -648,7 +614,7 @@ elseif ($a['type'] == "web")
 		</div>
 	</div>
 <?php
-}
+
 }
 
 
