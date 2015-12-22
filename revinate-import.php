@@ -554,7 +554,6 @@ function review_shortcode($atts)
 	?>
 	<div id="reviews-wrapper">
 		<div class="reviews" data-current-index="0">
-			<div class="reviews-container">
 				<?php
 					$my_query = new WP_Query($args);
 					if( $my_query->have_posts() )
@@ -591,7 +590,7 @@ function review_shortcode($atts)
 							?>
 						"</span>
 					</div>
-					<div class="col-xs-12 margin-top-10">
+					<div class="col-xs-12">
 						<div class="col-xs-8 no-padding review-site-name">
 							<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>
 						</div>
@@ -607,12 +606,11 @@ function review_shortcode($atts)
 	  }
 	      //wp_reset_query();  // Restore global post data stomped by the_post().
 	  ?>
-			</div>
-			<div class="col-xs-12">
-				<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
-					Read all Reviews
-				</a>
-			</div>
+		</div>
+		<div class="col-xs-12">
+			<a href="<?php echo get_post_type_archive_link( $type ); ?>" class="all-review">
+				Read all Reviews
+			</a>
 		</div>
 	</div>
 <?php
