@@ -36,7 +36,7 @@ class Revinate {
 			$log_table = $wpdb->prefix . 'revinateLog';
 			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
-				     'locationsubratings','cleansubratings','triptype','pagesize','pagetotalele','pagetotalpage','numbers','authorlocation','datereview','datecollected','reviewsitename')");
+				     'locationsubratings','cleansubratings','triptype','authorlocation','datereview','datecollected','reviewsitename')");
 			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
 			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret')");
 			$wpdb->query("DROP TABLE ".$log_table);########log need to be inserted for cron file
@@ -59,10 +59,10 @@ class Revinate {
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'revinateLog';
 			$sql = "CREATE TABLE $table_name (id int(11) NOT NULL AUTO_INCREMENT,
-			pageNo int(11) NOT NULL,
-			TotalPage int(11) NOT NULL,
-			Success int(11) NOT NULL,
-			whr varchar(20) NOT NULL,
+			page_no int(11) NOT NULL,
+			total_page int(11) NOT NULL,
+			success int(11) NOT NULL,
+			pointer varchar(20) NOT NULL,
 			UNIQUE KEY id (id))";
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta( $sql );
@@ -91,20 +91,20 @@ class Revinate {
 		}
 		else{
 			$myrows = json_decode(json_encode($myrows), true);
-			if($myrows[0]['Success'] == 1)
-				$pageNo =$myrows[0]['pageNo'];
+			if($myrows[0]['success'] == 1)
+				$pageNo =$myrows[0]['page_no'];
 			else
-				$pageNo =$myrows[0]['pageNo']+1;
+				$pageNo =$myrows[0]['page_no']+1;
 		}
 
 		/*Check Condition when to call API*/
-		if($myrows[0]['pageNo'] != $myrows[0]['TotalPage'] || $wpdb->num_rows < 1){
+		if($myrows[0]['page_no'] != $myrows[0]['total_page'] || $wpdb->num_rows < 1){
 
 			$arr = getCurlData($pageNo);/*Call API*/
 			$content = $arr['content'];
 			$totalPage = $arr['page']['totalPages'];
 
-			$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pageNo."','".$totalPage."','1','init') ON DUPLICATE KEY UPDATE pageNo ='".$pageNo."', Success = 1,TotalPage = '".$totalPage."',whr = 'init'");
+			$wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`) VALUES('1','".$pageNo."','".$totalPage."','1','init') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = 'init'");
 			insertReviews($content,$pageNo,$arr['page']['totalPages']);/*Insert Review*/
 		}
 	}
@@ -121,13 +121,10 @@ class Revinate {
 		global $wpdb;
 		if(isset($content)){
 		foreach($content as $val){
-
 			$title = $val['title'];
-
 			if(!isset($title)){
 				$title = "";
 			}
-
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 
@@ -170,20 +167,13 @@ class Revinate {
 				update_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
 				update_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
 				update_post_meta($post_id, 'triptype', $val['tripType']);
-
 				update_post_meta($post_id, 'datereview', $dateReview);
 				update_post_meta($post_id, 'datecollected', $dateCollected);
-
 				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
-
-				update_post_meta($post_id, 'pagesize', $val['page']['size']);
-				update_post_meta($post_id, 'pagetotalele', $val['page']['totalElements']);
-				update_post_meta($post_id, 'pagetotalpage', $val['page']['totalPages']);
-				update_post_meta($post_id, 'numbers', $val['page']['number']);
 
 				/*Entry in to log table for successful entry in post meta*/
 				$log_table = $wpdb->prefix . 'revinateLog';
-				$wpdb->query("INSERT INTO ".$log_table." (`id`, `pageNo`, `TotalPage`, `Success`,`whr`) VALUES('1','".$pg."','".$totalP."','0','bottom') ON DUPLICATE KEY UPDATE pageNo ='".$pg."', Success = 0 ,TotalPage = '".$totalP."',whr = 'bottom'");
+				$wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`) VALUES('1','".$pg."','".$totalP."','0','bottom') ON DUPLICATE KEY UPDATE page_no ='".$pg."', success = 0 ,total_page = '".$totalP."',pointer = 'bottom'");
 				}
 
 			}
@@ -289,7 +279,6 @@ class Revinate {
 	}
 
 
-
 	/* Add the Revinate Reviews Meta Boxes*/
 
 		function add_reviews_metaboxes() {
@@ -365,7 +354,6 @@ class Revinate {
 		update_post_meta( $post_id,'title',$_POST['title']);
 		update_post_meta( $post_id,'link',$_POST['link']);
 		update_post_meta( $post_id,'author',$_POST['author']);
-
 		update_post_meta( $post_id,'authorlocation',$_POST['authorlocation']);
 		update_post_meta( $post_id,'language',$_POST['language']);
 		update_post_meta( $post_id,'rating',$_POST['rating']);
@@ -492,12 +480,13 @@ class Revinate {
 	function revinate_edit_columns($columns){
 	  $columns = array(
 		"cb" => "<input type='checkbox' />",
-		"title" => "Review Title",
+		"title" => "Title",
+		"reviewcontent" => "Content",
+		"authorname" => "Author",
 		"rating" => "Rating",
 		"language" => "Language",
 		"triptype" => "Trip Type",
 		"datereview" => "Review Date",
-		"datecollected" => "Collected Date",
 		"reviewsitename" => "Review Site",
 	  );
 
@@ -516,6 +505,15 @@ class Revinate {
 		  $custom = get_post_custom();
 		  echo $custom["language"][0];
 		  break;
+		case "reviewcontent":
+			$content = get_the_content();
+			if(strlen($content)>90) {
+					echo substr($content, 0, 90).'...';
+			}
+			else {
+					echo $content;
+			}
+		  break;
 		case "triptype":
 		  $custom = get_post_custom();
 		  echo $custom["triptype"][0];
@@ -524,9 +522,9 @@ class Revinate {
 		  $custom = get_post_custom();
 		  echo $custom["datereview"][0];
 		  break;
-		case "datecollected":
+		case "authorname":
 		  $custom = get_post_custom();
-		  echo $custom["datecollected"][0];
+		  echo $custom["author"][0];
 		  break;
 		case "reviewsitename":
 		  $custom = get_post_custom();
@@ -585,8 +583,12 @@ function review_shortcode($atts)
 						<span>
 							"<?php
 								$content = get_the_content();
-								//if length is less than 90 dont add ...
-								echo substr($content, 0, 90).'...';
+								if(strlen($content)>90) {
+										echo substr($content, 0, 90).'...';
+								}
+								else {
+										echo $content;
+								}
 							?>
 						"</span>
 					</div>
