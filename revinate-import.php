@@ -38,11 +38,17 @@ class Revinate {
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
 				     'locationsubratings','cleansubratings','triptype','authorlocation','datereview','datecollected','reviewsitename')");
 			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
-			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret')");
+			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret','revinate_email','revinate_email_check')");
 			$wpdb->query("DROP TABLE ".$log_table);########log need to be inserted for cron file
 			flush_rewrite_rules();
 
 		}
+		function cronstarter_deactivate(){
+			$timeMinutesCron = wp_next_scheduled ('cron_revinate_pull');
+			wp_unschedule_event ($timeMinutesCron, 'cron_revinate_pull');
+			$timeDailyCron = wp_next_scheduled ('cron_pull');
+			wp_unschedule_event ($timeDailyCron, 'cron_pull');
+		}	
 
 
 	/*
@@ -62,7 +68,8 @@ class Revinate {
 			page_no int(11) NOT NULL,
 			total_page int(11) NOT NULL,
 			success int(11) NOT NULL,
-			pointer varchar(20) NOT NULL,
+			pointer int(11) NOT NULL,
+			date DATETIME NOT NULL,
 			UNIQUE KEY id (id))";
 			require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta( $sql );
@@ -78,37 +85,60 @@ class Revinate {
 	 * from API to the database.
 	 * Called with in a span of 10 minutes
 	 */
-	function rev_install_data(){
+		function rev_install_data(){
 		global $wpdb;
-
+		$date = date("y-m-d h:i:s");
 		/*Used to create log i.e. which page number of API should be initiated*/
 		$log_table = $wpdb->prefix . 'revinateLog';
 		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
-
+		$updateLog = 0;
 		/* Check which page number to be called for API*/
 		if($wpdb->num_rows < 1){
 			$pageNo = '1';
 		}
 		else{
 			$myrows = json_decode(json_encode($myrows), true);
-			if($myrows[0]['success'] == 1)
+			if($myrows[0]['success'] == 1){
 				$pageNo =$myrows[0]['page_no'];
-			else
+				$updateLog = 1;
+			}
+			else{
 				$pageNo =$myrows[0]['page_no']+1;
+			}
 		}
 
 		/*Check Condition when to call API*/
 		if($myrows[0]['page_no'] != $myrows[0]['total_page'] || $wpdb->num_rows < 1){
-
-			$arr = getCurlData($pageNo);/*Call API*/
-			$content = $arr['content'];
-			$totalPage = $arr['page']['totalPages'];
-
-			$wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`) VALUES('1','".$pageNo."','".$totalPage."','1','init') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = 'init'");
-			insertReviews($content,$pageNo,$arr['page']['totalPages']);/*Insert Review*/
+				###############fetch mail id
+				
+				
+				$arr = getCurlData($pageNo);/*Call API*/
+				
+				if(isset($arr['content'])){
+					$content = $arr['content'];
+					$totalPage = $arr['page']['totalPages'];
+					if($updateLog != 1){
+					$sql = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pageNo."','".$totalPage."','1','0','".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = '0',date = '".$date."'");
+						if(empty($sql)){
+							
+							$wpdb->show_errors();
+							$wpdb->print_error();
+							
+							return;
+							//Error mail
+						}
+					}
+					insertReviews($content,$pageNo,$arr['page']['totalPages'],0);/*Insert Review*/	
+				}
+				else{
+					//Error mail,change conditions to default or make conditions to start
+					echo "API Acces Denied.User credentials do not have access to large page size";
+					$logUpdate = $wpdb->query("UPDATE $log_table SET `pointer`= '1',date = '".$date."'");
+					return;
+				}	
 		}
 	}
-
+	
 	/*
 	 * It is used to insert reviews
 	 * to the database.
@@ -117,31 +147,50 @@ class Revinate {
 	 * initiated for API.
 	 * @param (totalP) Total no. of pages in API
 	 */
-	function insertReviews($content,$pg,$totalP){
+	function insertReviews($content,$pg,$totalP,$pointer){
 		global $wpdb;
+		$date = date("y-m-d h:i:s");
+		$countTotal = count($content);
+		$i = 0;
 		if(isset($content)){
 		foreach($content as $val){
 			$title = $val['title'];
 			if(!isset($title)){
 				$title = "";
 			}
-			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
+			$body = $val['body'];
+			if(!isset($body)){
+				$body = "";
+			}
+			
+			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";			
+			//$querystr = $wpdb->escape( $querystr );
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 
 			if(count($pageposts) > 0){
+				$i++;
 				continue;
 			}
+			#######Check Duplicate########
+			
+			
+			
 			/*Insert in to Post Table*/
 			$post_id = wp_insert_post(array (
 				'post_type' => 'revinate_reviews',
-				'post_title' => $val['title'],
-				'post_content' => $val['body'],
+				'post_title' => $title,
+				'post_content' => $body,
 				'post_status' => 'publish',
 				'comment_status' => 'closed',
 				'ping_status' => 'closed',
 			));
-
-
+			if($post_id == 0){
+				$wpdb->show_errors();
+				$wpdb->print_error();
+				return;
+				//Error mail
+			}
+			//echo $post_id."----".$title."____".$i."<br/>";
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
 				if(is_null($val['dateReview']))
@@ -170,14 +219,21 @@ class Revinate {
 				update_post_meta($post_id, 'datereview', $dateReview);
 				update_post_meta($post_id, 'datecollected', $dateCollected);
 				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
-
-				/*Entry in to log table for successful entry in post meta*/
-				$log_table = $wpdb->prefix . 'revinateLog';
-				$wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`) VALUES('1','".$pg."','".$totalP."','0','bottom') ON DUPLICATE KEY UPDATE page_no ='".$pg."', success = 0 ,total_page = '".$totalP."',pointer = 'bottom'");
+				
+				$i++;
 				}
-
 			}
-
+		}
+		//echo $i."-----".$countTotal;
+		if($i == $countTotal){
+			/*Entry in to log table for successful entry in post meta*/
+			$log_table = $wpdb->prefix . 'revinateLog';
+			$sqlLog = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pg."','".$totalP."','0','".$pointer."',date = '".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pg."', success = 0 ,total_page = '".$totalP."',pointer = '".$pointer."',date = '".$date."'");
+			
+		
+		}
+		else{
+			//mail which details didn't inserted
 		}
 	}
 
@@ -210,7 +266,7 @@ class Revinate {
 
 
 		));
-		$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews?page=".$pageNo;
+		$url = "https://porter.revinate.com/hotels/".$hotelId."/reviews?page=".$pageNo."&size=100&sort=dateReview,desc";
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
@@ -225,7 +281,34 @@ class Revinate {
 		return $arr;
 	}
 
-
+	/*
+	 * Cron for pulling daily reviews
+	 */
+	function pull_daily_reviews(){
+		global $wpdb;
+		$date = date("y-m-d h:i:s");
+		/*Used to create log i.e. which page number of API should be initiated*/
+		$log_table = $wpdb->prefix . 'revinateLog';
+		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
+		$myrows = json_decode(json_encode($myrows), true);
+		if($wpdb->num_rows > 0 && $myrows[0]['pointer'] == 1){
+			$pageNo =1;
+			$arr = getCurlDataa($pageNo);
+			$postTable = $wpdb->prefix . 'options';
+			$myrows = $wpdb->get_results( "SELECT * FROM ".$postTable ."where"  );
+			$myrows = json_decode(json_encode($myrows), true);
+			if(isset($arr['content'])){##############incase content is there
+					$content = $arr['content'];
+					$totalPage = $arr['page']['totalPages'];
+					$sql = $wpdb->query("UPDATE $log_table SET page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = 1,date = '".$date."'");
+					insertReviewss($content,$pageNo,$arr['page']['totalPages'],1);/*Insert Review*/	
+				}
+				else{
+					//echo "API Acces Denied.User credentials do not have access to large page size";
+					return;
+				}
+		}	
+	}
 	/*
 	 * Includes CSS and Js files
 	 */
@@ -386,10 +469,14 @@ class Revinate {
 
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
-		  register_setting( 'myplugin_options_group', 'revin_settings_url' );
-		  register_setting( 'myplugin_options_group', 'revin_settings_username' );
+		 register_setting( 'myplugin_options_group', 'revin_settings_url' );
+		  
+		 register_setting( 'myplugin_options_group', 'revin_settings_username' );
 		  register_setting( 'myplugin_options_group', 'revin_settings_token' );
 		  register_setting( 'myplugin_options_group', 'revin_settings_secret' );
+		  register_setting( 'myplugin_options_group', 'revinate_email' );
+		  register_setting( 'myplugin_options_group', 'revinate_email_check' );
+		  
 		}
 	}
 
@@ -420,6 +507,7 @@ class Revinate {
 	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
 	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
 	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
+	register_deactivation_hook( __FILE__, array('Revinate','cronstarter_deactivate') );
 
 
 
@@ -439,7 +527,13 @@ class Revinate {
 	}
 
 	add_action('cron_revinate_pull', 'rev_install_data');
+	
+	/*Fetch latest reviews*/
+	if (!wp_next_scheduled('cron_pull')) {
+			wp_schedule_event(time(), 'daily', 'cron_pull');
+	}
 
+	add_action('cron_pull', 'pull_daily_reviews');
 
 
 	function cd_display($single_templat)
