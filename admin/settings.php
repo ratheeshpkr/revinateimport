@@ -3,9 +3,6 @@
 	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-import/css/star.css');
 	}
 	add_action('admin_head', 'my_custom_fonts');
-	function mailSend(){
-		mail("prakshi.chouhan@sakhatech.com","Test Mail","Test mail content");
-	}
 	function my_custom_menu_page()
 	{
 		global $wpdb;
@@ -51,7 +48,7 @@
 	  </table>
 	  <?php	
 	  submit_button();
-	  mailSend();
+	  
 	  ?>
 	  </form>
 	  </div>
