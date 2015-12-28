@@ -1,6 +1,8 @@
 <?php
 	function my_custom_fonts() {
 	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-import/css/star.css');
+		// wp_enqueue_script('jquery', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
+		wp_enqueue_script('validationjs', site_url().'/wp-content/plugins/revinateimport/js/validate.js');
 	}
 	add_action('admin_head', 'my_custom_fonts');
 	function my_custom_menu_page()
@@ -11,7 +13,7 @@
 	  <?php screen_icon(); ?>
 	  <h1>Revinate Settings</h1>
 	  <form method="post" action="options.php">
-	  <?php settings_fields( 'myplugin_options_group' ); 
+	  <?php settings_fields( 'myplugin_options_group' );
 		do_settings_sections( 'myplugin_options_group' );
 	  ?>
 	  <!--<h3>Please provide below details</h3>-->
@@ -46,13 +48,13 @@
 	  <td><input type="text" id="revinate_email" name="revinate_email" value="<?php echo get_option('revinate_email'); ?>" class="regular-text "/></td>
 	  </tr>
 	  </table>
-	  <?php	
+	  <?php
 	  submit_button();
 	  ?>
 	  </form>
 	  </div>
 	<?php
-	
+
 	}
- 
+
 ?>

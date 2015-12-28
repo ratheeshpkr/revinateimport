@@ -562,7 +562,7 @@ class Revinate {
 	{
 		global $wpdb;
 		if (is_post_type_archive('revinate_reviews')) {
-			$archive_template = dirname(__FILE__) . '/templates/archive-reviews.php';
+			//$archive_template = dirname(__FILE__) . '/templates/archive-reviews.php';
 		}
 		return $archive_template;
 	}
