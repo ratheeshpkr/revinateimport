@@ -48,7 +48,7 @@ class Revinate {
 			wp_unschedule_event ($timeMinutesCron, 'cron_revinate_pull');
 			$timeDailyCron = wp_next_scheduled ('cron_pull');
 			wp_unschedule_event ($timeDailyCron, 'cron_pull');
-		}	
+		}
 
 
 	/*
@@ -110,35 +110,35 @@ class Revinate {
 		/*Check Condition when to call API*/
 		if($myrows[0]['page_no'] != $myrows[0]['total_page'] || $wpdb->num_rows < 1){
 				###############fetch mail id
-				
-				
+
+
 				$arr = getCurlData($pageNo);/*Call API*/
-				
+
 				if(isset($arr['content'])){
 					$content = $arr['content'];
 					$totalPage = $arr['page']['totalPages'];
 					if($updateLog != 1){
 					$sql = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pageNo."','".$totalPage."','1','0','".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = '0',date = '".$date."'");
 						if(empty($sql)){
-							
+
 							$wpdb->show_errors();
 							$wpdb->print_error();
-							
+
 							return;
 							//Error mail
 						}
 					}
-					insertReviews($content,$pageNo,$arr['page']['totalPages'],0);/*Insert Review*/	
+					insertReviews($content,$pageNo,$arr['page']['totalPages'],0);/*Insert Review*/
 				}
 				else{
 					//Error mail,change conditions to default or make conditions to start
 					echo "API Acces Denied.User credentials do not have access to large page size";
 					$logUpdate = $wpdb->query("UPDATE $log_table SET `pointer`= '1',date = '".$date."'");
 					return;
-				}	
+				}
 		}
 	}
-	
+
 	/*
 	 * It is used to insert reviews
 	 * to the database.
@@ -162,8 +162,8 @@ class Revinate {
 			if(!isset($body)){
 				$body = "";
 			}
-			
-			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";			
+
+			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
 			//$querystr = $wpdb->escape( $querystr );
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 
@@ -172,9 +172,9 @@ class Revinate {
 				continue;
 			}
 			#######Check Duplicate########
-			
-			
-			
+
+
+
 			/*Insert in to Post Table*/
 			$post_id = wp_insert_post(array (
 				'post_type' => 'revinate_reviews',
@@ -219,7 +219,7 @@ class Revinate {
 				update_post_meta($post_id, 'datereview', $dateReview);
 				update_post_meta($post_id, 'datecollected', $dateCollected);
 				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
-				
+
 				$i++;
 				}
 			}
@@ -229,8 +229,8 @@ class Revinate {
 			/*Entry in to log table for successful entry in post meta*/
 			$log_table = $wpdb->prefix . 'revinateLog';
 			$sqlLog = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pg."','".$totalP."','0','".$pointer."',date = '".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pg."', success = 0 ,total_page = '".$totalP."',pointer = '".$pointer."',date = '".$date."'");
-			
-		
+
+
 		}
 		else{
 			//mail which details didn't inserted
@@ -301,13 +301,13 @@ class Revinate {
 					$content = $arr['content'];
 					$totalPage = $arr['page']['totalPages'];
 					$sql = $wpdb->query("UPDATE $log_table SET page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = 1,date = '".$date."'");
-					insertReviewss($content,$pageNo,$arr['page']['totalPages'],1);/*Insert Review*/	
+					insertReviewss($content,$pageNo,$arr['page']['totalPages'],1);/*Insert Review*/
 				}
 				else{
 					//echo "API Acces Denied.User credentials do not have access to large page size";
 					return;
 				}
-		}	
+		}
 	}
 	/*
 	 * Includes CSS and Js files
@@ -470,13 +470,13 @@ class Revinate {
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
 		 register_setting( 'myplugin_options_group', 'revin_settings_url' );
-		  
+
 		 register_setting( 'myplugin_options_group', 'revin_settings_username' );
 		  register_setting( 'myplugin_options_group', 'revin_settings_token' );
 		  register_setting( 'myplugin_options_group', 'revin_settings_secret' );
 		  register_setting( 'myplugin_options_group', 'revinate_email' );
 		  register_setting( 'myplugin_options_group', 'revinate_email_check' );
-		  
+
 		}
 	}
 
@@ -527,7 +527,7 @@ class Revinate {
 	}
 
 	add_action('cron_revinate_pull', 'rev_install_data');
-	
+
 	/*Fetch latest reviews*/
 	if (!wp_next_scheduled('cron_pull')) {
 			wp_schedule_event(time(), 'daily', 'cron_pull');
@@ -655,10 +655,10 @@ function review_shortcode($atts)
 				<div class="review">
 					<div class="col-xs-12 review-header">
 						<div class="col-xs-2 no-padding">
-								<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img"></a>
+								<img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
 						</div>
 						<div class="col-xs-10">
-			    			<span class="review-user-name"><a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></a></span>
+			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
 								<div class="row">
 										<div class="col-xs-12 padding-right-0">
 											<?php
