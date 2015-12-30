@@ -669,10 +669,10 @@ function review_shortcode($atts)
 				<div class="review">
 					<div class="col-xs-12 review-header">
 						<div class="col-xs-2 no-padding">
-								<a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img"></a>
+								<img src="<?php echo bloginfo('template_directory'); ?>/imgs/profile.png" alt="" class="review-user-img">
 						</div>
 						<div class="col-xs-10">
-			    			<span class="review-user-name"><a href="<?php the_permalink() ?>" rel="bookmark" title="<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></a></span>
+			    			<span class="review-user-name"><?php echo get_post_meta(get_the_ID(),'author', true).' '.get_post_meta(get_the_ID(),'authorlocation', true);?></span>
 								<div class="row">
 										<div class="col-xs-12 padding-right-0">
 											<?php
