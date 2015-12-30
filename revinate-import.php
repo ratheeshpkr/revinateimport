@@ -689,16 +689,18 @@ function review_shortcode($atts)
  					<div class="col-xs-12 review-body">
 					<div class="col-xs-12 quote">
 						<span>
-							"<?php
+							<?php
 								$content = get_the_content();
-								if(strlen($content)>90) {
-										echo substr($content, 0, 90).'...';
-								}
-								else {
-										echo $content;
+								if($content != ""){
+									if(strlen($content)>90) {
+											echo "\"".substr($content, 0, 90).'..."';
+									}
+									else {
+											echo '"'.$content.'"';
+									}
 								}
 							?>
-						"</span>
+						</span>
 					</div>
 					<div class="col-xs-12">
 						<div class="col-xs-8 no-padding review-site-name">
