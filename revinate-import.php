@@ -434,22 +434,24 @@ class Revinate {
 	add_action( 'save_post', 'myplugin_save_postdata' );
 
 	function myplugin_save_postdata( $post_id ) {
-		update_post_meta( $post_id,'title',$_POST['title']);
-		update_post_meta( $post_id,'link',$_POST['link']);
-		update_post_meta( $post_id,'author',$_POST['author']);
-		update_post_meta( $post_id,'authorlocation',$_POST['authorlocation']);
-		update_post_meta( $post_id,'language',$_POST['language']);
-		update_post_meta( $post_id,'rating',$_POST['rating']);
-		update_post_meta( $post_id,'subratings',$_POST['subratings']);
-		update_post_meta( $post_id,'roomsubratings',$_POST['roomsubratings']);
-		update_post_meta( $post_id,'cleansubratings',$_POST['cleansubratings']);
-		update_post_meta( $post_id,'locationsubratings',$_POST['locationsubratings']);
-		update_post_meta( $post_id,'hotelsubratings',$_POST['hotelsubratings']);
-		update_post_meta( $post_id,'triptype',$_POST['triptype']);
-		update_post_meta( $post_id,'subratings',$_POST['subratings']);
-		update_post_meta( $post_id,'datereview',$_POST['datereview']);
-		update_post_meta( $post_id,'datecollected',$_POST['datecollected']);
-		update_post_meta( $post_id,'reviewsitename',$_POST['reviewsitename']);
+		if(isset($_POST['rating'])){
+			update_post_meta( $post_id,'title',$_POST['title']);
+			update_post_meta( $post_id,'link',$_POST['link']);
+			update_post_meta( $post_id,'author',$_POST['author']);
+			update_post_meta( $post_id,'authorlocation',$_POST['authorlocation']);
+			update_post_meta( $post_id,'language',$_POST['language']);
+			update_post_meta( $post_id,'rating',$_POST['rating']);
+			update_post_meta( $post_id,'subratings',$_POST['subratings']);
+			update_post_meta( $post_id,'roomsubratings',$_POST['roomsubratings']);
+			update_post_meta( $post_id,'cleansubratings',$_POST['cleansubratings']);
+			update_post_meta( $post_id,'locationsubratings',$_POST['locationsubratings']);
+			update_post_meta( $post_id,'hotelsubratings',$_POST['hotelsubratings']);
+			update_post_meta( $post_id,'triptype',$_POST['triptype']);
+			update_post_meta( $post_id,'subratings',$_POST['subratings']);
+			update_post_meta( $post_id,'datereview',$_POST['datereview']);
+			update_post_meta( $post_id,'datecollected',$_POST['datecollected']);
+			update_post_meta( $post_id,'reviewsitename',$_POST['reviewsitename']);
+		}
 	}
 
 	function myplugin_register_settings() {
