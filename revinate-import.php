@@ -247,7 +247,8 @@ class Revinate {
 	 */
 	function getCurlData($pageNo){
 		/*Get API details from post table*/
-	  $hotelId = get_option('revin_settings_url');
+		$const = '$5$rounds=5000$';
+	    $hotelId = get_option('revin_settings_url');
 		$USERNAME= get_option('revin_settings_username');
 		$TOKEN= get_option('revin_settings_token');
 		$SECRET= get_option('revin_settings_secret');
