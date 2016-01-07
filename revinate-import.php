@@ -668,6 +668,8 @@ function review_shortcode($atts)
 					if( $my_query->have_posts() )
 					{
 						while ($my_query->have_posts()) : $my_query->the_post();
+							$content = get_the_content();
+							if($content != "" ){
 				?>
 				<div class="review">
 					<div class="col-xs-12 review-header">
@@ -716,7 +718,9 @@ function review_shortcode($atts)
 					</div>
 				</div>
 		</div>
+								
 		<?php
+								}					
     endwhile;
 	  }
 	      //wp_reset_query();  // Restore global post data stomped by the_post().
