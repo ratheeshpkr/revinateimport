@@ -667,9 +667,11 @@ function review_shortcode($atts)
 					$my_query = new WP_Query($args);
 					if( $my_query->have_posts() )
 					{
+						$counter=0;
 						while ($my_query->have_posts()) : $my_query->the_post();
 							$content = get_the_content();
-							if($content != "" ){
+							if($content != "" && $counter<=4 ){
+								$counter++;
 				?>
 				<div class="review">
 					<div class="col-xs-12 review-header">
