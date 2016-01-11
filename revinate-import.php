@@ -630,6 +630,9 @@ class Revinate {
 	  }
 	}
 
+	function filter_where_content_is_empty($where = ''){
+			return $where .= " AND post_content <>''";
+	}
 
 function review_shortcode($atts)
 {
@@ -644,8 +647,7 @@ function review_shortcode($atts)
 	    'post_type' => $type,
 	    'post_status' => 'publish',
 	    'posts_per_page' => $a['count'],
-		//'caller_get_posts' => 4,
-		'suppress_filters' => false,
+		  'suppress_filters' => false,
       	'meta_query'       => array(
           'relation'    => 'AND',
           array(
@@ -664,14 +666,15 @@ function review_shortcode($atts)
 	<div id="reviews-wrapper">
 		<div class="reviews" data-current-index="0">
 				<?php
+					add_filter('posts_where', 'filter_where_content_is_empty');
 					$my_query = new WP_Query($args);
+					remove_filter('posts_where', 'filter_where_content_is_empty');
+
 					if( $my_query->have_posts() )
 					{
 						$counter=0;
 						while ($my_query->have_posts()) : $my_query->the_post();
-							$content = get_the_content();
-							if($content != "" && $counter<=4 ){
-								$counter++;
+
 				?>
 				<div class="review">
 					<div class="col-xs-12 review-header">
@@ -686,7 +689,7 @@ function review_shortcode($atts)
 													$triptype = "";
 													if(get_post_meta(get_the_ID(),'triptype', true)!=""){
 														$triptype = "Trip type: ".get_post_meta(get_the_ID(),'triptype', true);
-													}//date_format(strtotime(get_post_meta(get_the_ID(),'datereview', true)), 'M j, Y')
+													}
 											?>
 												<span class="review-date"><?php echo date( 'M j, Y', strtotime(get_post_meta(get_the_ID(),'datereview', true)));  ?></span> &nbsp;	<span class="review-trip-type"><?php echo $triptype; ?></span>
 										</div>
@@ -720,9 +723,9 @@ function review_shortcode($atts)
 					</div>
 				</div>
 		</div>
-								
+
 		<?php
-								}					
+								// }
     endwhile;
 	  }
 	      //wp_reset_query();  // Restore global post data stomped by the_post().
