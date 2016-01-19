@@ -10,7 +10,7 @@ License: GPL2
 Text Domain: Revinate-rating
 Domain Path: languages
 */
-
+ob_start();
 class Revinate {
 
 	/**
@@ -461,14 +461,14 @@ class Revinate {
 	}
 	add_action( 'admin_init', 'myplugin_register_settings' );
 
-	add_action( 'admin_menu', 'register_my_custom_menu_page1' );
+	
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
 		add_submenu_page('edit.php?post_type=revinate_reviews', 'Settings', 'Settings', 'edit_posts', basename(__FILE__), 'my_custom_menu_page');
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
-
+	add_action( 'admin_menu', 'register_my_custom_menu_page1' );
 
 	if( !function_exists("update_extra_post_info") ) {
 		function update_extra_post_info() {
@@ -589,7 +589,7 @@ class Revinate {
 
 	  return $columns;
 	}
-
+	
 	function revinate_custom_columns($column){
 	  global $post;
 
