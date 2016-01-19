@@ -294,7 +294,7 @@ class Revinate {
 		$myrows = json_decode(json_encode($myrows), true);
 		if($wpdb->num_rows > 0 && $myrows[0]['pointer'] == 1){
 			$pageNo =1;
-			$arr = getCurlDataa($pageNo);
+			$arr = getCurlData($pageNo);
 			$postTable = $wpdb->prefix . 'options';
 			$myrows = $wpdb->get_results( "SELECT * FROM ".$postTable ."where"  );
 			$myrows = json_decode(json_encode($myrows), true);
