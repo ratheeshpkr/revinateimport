@@ -37,7 +37,7 @@ class Revinate {
 			$wpdb->query("DELETE FROM " . $postmeta_table . " WHERE meta_key IN('title','link','author','rating',
 				     'language','subratings','roomsubratings','valuesubratings','hotelsubratings',
 				     'locationsubratings','cleansubratings','triptype','authorlocation','datereview','datecollected','reviewsitename')");
-			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'revinate_reviews'");
+			$wpdb->query("DELETE FROM " . $posts_table . " WHERE post_type = 'reviews'");
 			$wpdb->query("DELETE FROM " . $option_table . " WHERE option_name IN('revin_settings_url','revin_settings_username','revin_settings_token','revin_settings_secret','revinate_email','revinate_email_check')");
 			$wpdb->query("DROP TABLE ".$log_table);########log need to be inserted for cron file
 			flush_rewrite_rules();
@@ -177,7 +177,7 @@ class Revinate {
 
 			/*Insert in to Post Table*/
 			$post_id = wp_insert_post(array (
-				'post_type' => 'revinate_reviews',
+				'post_type' => 'reviews',
 				'post_title' => $title,
 				'post_content' => $body,
 				'post_status' => 'publish',
@@ -342,7 +342,7 @@ class Revinate {
 			'thumbnail'
 		),
 		'labels' => array(
-			'name' => 'Revinate',
+			'name' => 'All Reviews',
       'singular_name' => 'Review',
 			'add_new' => 'Add Review',
 			'add_new_item' => 'Add Review',
@@ -357,7 +357,7 @@ class Revinate {
 		);
 		flush_rewrite_rules();
 		/*register the post type*/
-		register_post_type( 'revinate_reviews', $reviews_args );
+		register_post_type( 'reviews', $reviews_args );
 
 		add_action( 'add_meta_boxes', 'add_reviews_metaboxes' );
 	}
@@ -366,7 +366,7 @@ class Revinate {
 	/* Add the Revinate Reviews Meta Boxes*/
 
 		function add_reviews_metaboxes() {
-			add_meta_box('wpt_reviews_location', 'Revinate Reviews', 'wpt_reviews_location', 'revinate_reviews', 'normal', 'default');
+			add_meta_box('wpt_reviews_location', 'Review Meta data', 'wpt_reviews_location', 'reviews', 'normal', 'default');
 		}
 
 	/*The Revinate Reviews Metabox
@@ -465,7 +465,7 @@ class Revinate {
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
-		add_submenu_page('edit.php?post_type=revinate_reviews', 'Settings', 'Settings', 'edit_posts', basename(__FILE__), 'my_custom_menu_page');
+		add_submenu_page('edit.php?post_type=reviews', 'Settings', 'Settings', 'edit_posts', basename(__FILE__), 'my_custom_menu_page');
 		add_action( 'admin_init', 'update_extra_post_info' );
 	}
 	add_action( 'admin_menu', 'register_my_custom_menu_page1' );
@@ -486,7 +486,7 @@ class Revinate {
 	function view_shortcode(){
 		global $wpdb;
 
-		$querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'revinate_reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
+		$querystr = "SELECT $wpdb->posts.ID,$wpdb->posts.post_title FROM $wpdb->posts LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE $wpdb->postmeta.meta_key = 'rating' AND $wpdb->posts.post_status = 'publish' AND $wpdb->posts.post_type = 'reviews' ORDER BY $wpdb->postmeta.meta_value DESC";
 		$pageposts = $wpdb->get_results($querystr);
 		foreach($pageposts as $val){
 			 if($val->post_title != ''){
@@ -546,7 +546,7 @@ class Revinate {
 		if( is_single() ){
 			/* We're in the loop, so we can grab the $post variable*/
 			global $post;
-			if($post->post_type == 'revinate_reviews'){
+			if($post->post_type == 'reviews'){
 				include  dirname( __FILE__ )  . '/template-functions.php';
 				$single_templat = dirname( __FILE__ ).'/templates/single_reviews.php';
 			}
@@ -564,15 +564,15 @@ class Revinate {
 	function get_custom_post_type_template($archive_template)
 	{
 		global $wpdb;
-		if (is_post_type_archive('revinate_reviews')) {
+		if (is_post_type_archive('reviews')) {
 			//$archive_template = dirname(__FILE__) . '/templates/archive-reviews.php';
 		}
 		return $archive_template;
 	}
 	add_filter('archive_template', 'get_custom_post_type_template');
 
-	add_action("manage_revinate_reviews_posts_custom_column",  "revinate_custom_columns");
-	add_filter("manage_revinate_reviews_posts_columns", "revinate_edit_columns");
+	add_action("manage_reviews_posts_custom_column",  "revinate_custom_columns");
+	add_filter("manage_reviews_posts_columns", "revinate_edit_columns");
 
 	function revinate_edit_columns($columns){
 	  $columns = array(
@@ -636,7 +636,7 @@ class Revinate {
 
 function review_shortcode($atts)
 {
-	  $type = 'revinate_reviews';
+	  $type = 'reviews';
 
 		$a = shortcode_atts( array(
 				'count' => 'attribute 2 default',
