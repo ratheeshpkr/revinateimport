@@ -172,8 +172,10 @@ class Revinate {
 				continue;
 			}
 			#######Check Duplicate########
-
-
+			if(empty($title)){
+				$title = $val['reviewSite']['name'].' review by '.$val['author'];
+			}
+				
 
 			/*Insert in to Post Table*/
 			$post_id = wp_insert_post(array (
@@ -716,7 +718,7 @@ function review_shortcode($atts)
 						<div class="col-xs-8 no-padding review-site-name">
 							<?php echo get_post_meta(get_the_ID(),'reviewsitename', true); ?>
 						</div>
-						<div class="col-xs-4 no-padding">
+						<div class="col-xs-4 no-padding" title="<?php echo get_post_meta(get_the_ID(),'rating', true);?> out of 5">
 							<div class="review-star-bg"></div>
 							<div class="review-star" data-value="<?php echo get_post_meta(get_the_ID(),'rating', true);?>"></div>
 						</div>
