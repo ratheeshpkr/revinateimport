@@ -177,15 +177,23 @@ class Revinate {
 			}
 				
 
+			if(is_null($val['dateReview']))
+						$dateReview = '';
+			else
+						$dateReview = date("Y-m-d H:i:s",$val['dateReview']);
 			/*Insert in to Post Table*/
 			$post_id = wp_insert_post(array (
 				'post_type' => 'reviews',
 				'post_title' => $title,
 				'post_content' => $body,
 				'post_status' => 'publish',
+				'post_date' => $dateReview,
 				'comment_status' => 'closed',
 				'ping_status' => 'closed',
 			));
+
+			error_log("Post with id: ".$post_id." titled: ".$title." got inserted");
+
 			if($post_id == 0){
 				$wpdb->show_errors();
 				$wpdb->print_error();
@@ -195,10 +203,10 @@ class Revinate {
 			//echo $post_id."----".$title."____".$i."<br/>";
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
-				if(is_null($val['dateReview']))
-					 		$dateReview = '';
-				else
-							$dateReview = date("m/d/Y",$val['dateReview']);
+				// if(is_null($val['dateReview']))
+				// 	 		$dateReview = '';
+				// else
+				// 			$dateReview = date("m/d/Y",$val['dateReview']);
 
 				if(is_null($val['dateCollected']))
 					 		$dateCollected = '';
@@ -463,7 +471,7 @@ class Revinate {
 	}
 	add_action( 'admin_init', 'myplugin_register_settings' );
 
-	
+
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
@@ -591,7 +599,7 @@ class Revinate {
 
 	  return $columns;
 	}
-	
+
 	function revinate_custom_columns($column){
 	  global $post;
 
@@ -650,19 +658,26 @@ function review_shortcode($atts)
 	    'post_status' => 'publish',
 	    'posts_per_page' => $a['count'],
 		  'suppress_filters' => false,
-      	'meta_query'       => array(
-          'relation'    => 'AND',
-          array(
-              'key'          => 'rating',
-              'value'        => '4',
-              'compare'      => '>=',
-          ),
-          array(
-              'key'          => 'rating',
-              'value'        => '5',
-              'compare'      => '<=',
-          )
-      	),
+			'order' => "DESC",
+      'orderby' => 'date',
+    	'meta_query'       => array(
+        'relation'    => 'AND',
+        array(
+            'key'          => 'rating',
+            'value'        => '4',
+            'compare'      => '>=',
+        ),
+        array(
+            'key'          => 'rating',
+            'value'        => '5',
+            'compare'      => '<=',
+        ),
+				array(
+            'key'          => 'language',
+            'value'        => 'English',
+            'compare'      => '=',
+        )
+    	),
 	  );
 	?>
 	<div id="reviews-wrapper">
