@@ -173,6 +173,10 @@ class Revinate {
 			}
 			#######Check Duplicate########
 
+			if(is_null($val['dateReview']))
+						$dateReview = '';
+			else
+						$dateReview = date("Y-m-d H:i:s",$val['dateReview']);
 
 
 			/*Insert in to Post Table*/
@@ -181,6 +185,7 @@ class Revinate {
 				'post_title' => $title,
 				'post_content' => $body,
 				'post_status' => 'publish',
+				'post_date' => $dateReview,
 				'comment_status' => 'closed',
 				'ping_status' => 'closed',
 			));
@@ -193,10 +198,10 @@ class Revinate {
 			//echo $post_id."----".$title."____".$i."<br/>";
 			if ($post_id) {
 				/*Insert in to Postmeta Table*/
-				if(is_null($val['dateReview']))
-					 		$dateReview = '';
-				else
-							$dateReview = date("m/d/Y",$val['dateReview']);
+				// if(is_null($val['dateReview']))
+				// 	 		$dateReview = '';
+				// else
+				// 			$dateReview = date("m/d/Y",$val['dateReview']);
 
 				if(is_null($val['dateCollected']))
 					 		$dateCollected = '';
@@ -461,7 +466,7 @@ class Revinate {
 	}
 	add_action( 'admin_init', 'myplugin_register_settings' );
 
-	
+
 
 	function register_my_custom_menu_page1(){
 		include  dirname( __FILE__ )  . '/admin/settings.php';
@@ -589,7 +594,7 @@ class Revinate {
 
 	  return $columns;
 	}
-	
+
 	function revinate_custom_columns($column){
 	  global $post;
 
