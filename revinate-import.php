@@ -129,6 +129,7 @@ class Revinate {
 						}
 					}
 					insertReviews($content,$pageNo,$arr['page']['totalPages'],0);/*Insert Review*/
+					//calcuateaverage();
 				}
 				else{
 					//Error mail,change conditions to default or make conditions to start
@@ -137,6 +138,47 @@ class Revinate {
 					return;
 				}
 		}
+	}
+
+	function calcuateaverage($post_ID,$post, $update){
+		global $wpdb;
+
+		$subratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'subratings' AND $wpdb->postmeta.meta_value != ''";
+		$subratings_arr = $wpdb->get_results($subratings, OBJECT);
+		update_option('totalsubratings',$subratings_arr[0]->AVRG);
+		error_log("Calculated subratings");
+
+		$roomsubratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'roomsubratings' AND $wpdb->postmeta.meta_value != ''";
+		$roomsubratings_arr = $wpdb->get_results($roomsubratings, OBJECT);
+		update_option('totalroomsubratings',$roomsubratings_arr[0]->AVRG);
+
+		error_log("Calculated totalroomsubratings");
+
+		$valuesubratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'valuesubratings' AND $wpdb->postmeta.meta_value != ''";
+		$valuesubratings_arr = $wpdb->get_results($valuesubratings, OBJECT);
+		update_option('totalvaluesubratings',$valuesubratings_arr[0]->AVRG);
+
+		error_log("Calculated valuesubratings_arr");
+
+		$hotelsubratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'hotelsubratings' AND $wpdb->postmeta.meta_value != ''";
+		$hotelsubratings_arr = $wpdb->get_results($hotelsubratings, OBJECT);
+		update_option('totalvaluesubratings',$hotelsubratings_arr[0]->AVRG);
+
+		error_log("Calculated totalhotelsubratings");
+
+		$locationsubratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'locationsubratings' AND $wpdb->postmeta.meta_value != ''";
+		$locationsubratings_arr = $wpdb->get_results($locationsubratings, OBJECT);
+		update_option('totallocationsubratings',$locationsubratings_arr[0]->AVRG);
+
+		error_log("Calculated locationsubratings_arr");
+
+		$cleansubratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'cleansubratings' AND $wpdb->postmeta.meta_value != ''";
+		$cleansubratings_arr = $wpdb->get_results($cleansubratings, OBJECT);
+		update_option('totalcleansubratings',$cleansubratings_arr[0]->AVRG);
+
+		error_log("Calculated totalcleansubratings");
+
+		error_log("Calculated Averages");
 	}
 
 	/*
@@ -175,7 +217,7 @@ class Revinate {
 			if(empty($title)){
 				$title = $val['reviewSite']['name'].' review by '.$val['author'];
 			}
-				
+
 
 			if(is_null($val['dateReview']))
 						$dateReview = '';
@@ -234,8 +276,9 @@ class Revinate {
 				}
 			}
 		}
-		//echo $i."-----".$countTotal;
+
 		if($i == $countTotal){
+			error_log("Entry in to log table for successful entry in post meta");
 			/*Entry in to log table for successful entry in post meta*/
 			$log_table = $wpdb->prefix . 'revinateLog';
 			$sqlLog = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pg."','".$totalP."','0','".$pointer."',date = '".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pg."', success = 0 ,total_page = '".$totalP."',pointer = '".$pointer."',date = '".$date."'");
@@ -312,7 +355,8 @@ class Revinate {
 					$content = $arr['content'];
 					$totalPage = $arr['page']['totalPages'];
 					$sql = $wpdb->query("UPDATE $log_table SET page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = 1,date = '".$date."'");
-					insertReviewss($content,$pageNo,$arr['page']['totalPages'],1);/*Insert Review*/
+					insertReviews($content,$pageNo,$arr['page']['totalPages'],1);/*Insert Review*/
+					//calcuateaverage();
 				}
 				else{
 					//echo "API Acces Denied.User credentials do not have access to large page size";
@@ -442,10 +486,14 @@ class Revinate {
 	/*Update all the reviews and
 	 *save it to database
 	*/
+
+	add_action('save_post_reviews', 'calcuateaverage');
+
 	add_action( 'save_post', 'myplugin_save_postdata' );
 
 	function myplugin_save_postdata( $post_id ) {
 		if(isset($_POST['rating'])){
+			//calcuateaverage();
 			update_post_meta( $post_id,'title',$_POST['title']);
 			update_post_meta( $post_id,'link',$_POST['link']);
 			update_post_meta( $post_id,'author',$_POST['author']);
@@ -760,3 +808,96 @@ function review_shortcode($atts)
 
 
 add_shortcode( 'review', 'review_shortcode' );
+
+
+class HotelRatings_widget extends WP_Widget {
+
+function __construct() {
+parent::__construct(
+	// Base ID of your widget
+	'hotelratings_widget',
+
+	// Widget name will appear in UI
+	__('Hotel Ratings Widget', 'hotelratings_widget_domain'),
+
+	// Widget description
+	array( 'description' => __( 'Hotel Ratings Widget', 'hotelratings_widget_domain' ), )
+	);
+}
+
+// Creating widget front-end
+
+public function widget( $args, $instance ) {
+	$title = apply_filters( 'widget_title', $instance['title'] );
+	// before and after widget arguments are defined by themes
+	echo $args['before_widget'];
+	if ( ! empty( $title ) )
+	  // echo $args['before_title'] . $title . $args['after_title'];
+    //echo $args['before_title'] . '<h3 class="line-heading blog-widget-title"><span>'.$title.'</span><hr/></h3>'. $args['after_title'];
+
+	// This is where you run the code and display the output
+	
+	echo '
+	<div class="reviews-subrating">
+		<h3>$n Verified Guest Reviews</h3>
+			<div class="col-xs-6 col-sm-6">
+				<div class="review-star-bg"></div>
+					<div class="review-star" data-value="'.get_option( 'totalsubratings').'"></div>
+			</div>
+			<div class="col-xs-6 col-sm-6">';
+				echo '<h4>'.get_option( 'totalsubratings').' out of 5</h4>
+			</div>
+			<div class="col-xs-6 col-sm-6">
+				
+				<progress max="5" value="'.get_option( 'totalroomsubratings').'"></progress>';
+				echo get_option( 'totalroomsubratings').'
+				<progress max="5" value="'.get_option( 'totalvaluesubratings').'"></progress>';
+				echo get_option( 'totalvaluesubratings').'
+			</div>
+			<div class="col-xs-6 col-sm-6">
+				
+				<progress max="5" value="'.get_option( 'totallocationsubratings').'"></progress>';
+				echo get_option( 'totallocationsubratings').'
+				<progress max="5" value="'.get_option( 'totalcleansubratings').'"></progress>';
+				echo get_option( 'totalcleansubratings').'
+			</div>
+	</div>';
+      
+	// echo $args['after_widget'];
+}
+
+// Widget Backend
+public function form( $instance ) {
+	if ( isset( $instance[ 'title' ] ) ) {
+	$title = $instance[ 'title' ];
+	}
+	else {
+	$title = __( 'Hotel Ratings Widget', 'hotelratings_widget_domain' );
+	}
+// Widget admin form
+?>
+<p>
+<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
+</p>
+<?php
+}
+
+// Updating widget replacing old instances with new
+public function update( $new_instance, $old_instance ) {
+
+	$instance = array();
+	$instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
+	return $instance;
+
+}
+} // Class hotelratings_widget ends here
+
+// Register and load the widget
+function hotelratings_load_widget() {
+	register_widget( 'hotelratings_widget' );
+}
+add_action( 'widgets_init', 'hotelratings_load_widget' );
+
+
+/********   Hotel Rating Widget Ends      ********/
