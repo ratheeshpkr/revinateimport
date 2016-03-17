@@ -1,8 +1,8 @@
 <?php
 	function my_custom_fonts() {
-	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-import/css/star.css');
+	  wp_enqueue_style('star-css', site_url().'/wp-content/plugins/revinateimport-master/css/star.css');
 		// wp_enqueue_script('jquery', site_url().'/wp-content/plugins/revinateimport/js/jquery.min.js');
-		wp_enqueue_script('validationjs', site_url().'/wp-content/plugins/revinateimport/js/validate.js');
+		wp_enqueue_script('validationjs', site_url().'/wp-content/plugins/revinateimport-master/js/validate.js');
 	}
 	add_action('admin_head', 'my_custom_fonts');
 	function my_custom_menu_page()
@@ -50,7 +50,7 @@
 	  </table>
 	  <?php
 	  submit_button();
-	  
+
 	  ?>
 	  </form>
 	  </div>

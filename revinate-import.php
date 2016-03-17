@@ -396,7 +396,7 @@ class Revinate {
 			'thumbnail'
 		),
 		'labels' => array(
-			'name' => 'All Reviews',
+			'name' => 'Reviews',
       'singular_name' => 'Review',
 			'add_new' => 'Add Review',
 			'add_new_item' => 'Add Review',
@@ -710,7 +710,7 @@ function review_shortcode($atts)
       'orderby' => 'date',
     	'meta_query'       => array(
         'relation'    => 'AND',
-        array(
+        /* array(
             'key'          => 'rating',
             'value'        => '4',
             'compare'      => '>=',
@@ -719,7 +719,7 @@ function review_shortcode($atts)
             'key'          => 'rating',
             'value'        => '5',
             'compare'      => '<=',
-        ),
+        ), */
 				array(
             'key'          => 'language',
             'value'        => 'English',
