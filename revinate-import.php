@@ -1,13 +1,13 @@
 <?php
 /*
-Plugin Name: Revinate Rating
+Plugin Name:  Hotel Reviews
 Plugin URI: http://wordpress.org/
-Description: The best rating plugin for WordPress. Revinate Rating shows all multiple Hotel ratings through Revinate API
+Description: The best rating plugin for WordPress. Hotel Reviews shows all multiple Hotel ratings through Revinate API
 Version: 1.0
 Author: Sakhatech
 Author URI: https://github.com/ratheeshpkr/revinateimport
 License: GPL2
-Text Domain: Revinate-rating
+Text Domain: Hotel-rating
 Domain Path: languages
 */
 ob_start();
@@ -710,7 +710,7 @@ function review_shortcode($atts)
       'orderby' => 'date',
     	'meta_query'       => array(
         'relation'    => 'AND',
-        /* array(
+         array(
             'key'          => 'rating',
             'value'        => '4',
             'compare'      => '>=',
@@ -719,7 +719,7 @@ function review_shortcode($atts)
             'key'          => 'rating',
             'value'        => '5',
             'compare'      => '<=',
-        ), */
+        ), 
 				array(
             'key'          => 'language',
             'value'        => 'English',
