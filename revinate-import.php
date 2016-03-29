@@ -3,7 +3,7 @@
 Plugin Name:  Hotel Reviews
 Plugin URI: http://wordpress.org/
 Description: The best rating plugin for WordPress. Hotel Reviews shows all multiple Hotel ratings through Revinate API
-Version: 1.0
+Version: 1.1
 Author: Sakhatech
 Author URI: https://github.com/ratheeshpkr/revinateimport
 License: GPL2
@@ -11,6 +11,15 @@ Text Domain: Hotel-rating
 Domain Path: languages
 */
 ob_start();
+
+//Checking for Update
+  require 'plugin-update-checker/plugin-update-checker.php';
+	$MyUpdateChecker = PucFactory::buildUpdateChecker(
+    'http://snc.staging.snhotels.com/property/metadata_rating.json',
+		__FILE__,
+		'revinate-import'
+	);
+ 
 class Revinate {
 
 	/**
