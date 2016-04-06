@@ -3,7 +3,7 @@
 Plugin Name:  Hotel Reviews
 Plugin URI: http://wordpress.org/
 Description: The best rating plugin for WordPress. Hotel Reviews shows all multiple Hotel ratings through Revinate API
-Version: 1.1
+Version: 1.2
 Author: Sakhatech
 Author URI: https://github.com/ratheeshpkr/revinateimport
 License: GPL2
@@ -391,30 +391,32 @@ class Revinate {
 	function srd_reviews_register_post_type() {
 	/* setup the arguments for the location post type*/
 	$reviews_args = array(
-		'public' => true,
-		'query_var' => 'reviews',
-		'rewrite' => array(
-			'slug' => 'reviews',
-			'with_front' => false
+		'public' 				=> true,
+		'query_var'				=> 'reviews',
+		'rewrite' 				=> array(
+			'slug' 				=> 'reviews',
+			'with_front' 		=> false
 		),
-		'has_archive'        => true,
-		'show_in_menu'       => true,
+		'has_archive'       	=> true,
+		'show_in_menu'      	=> true,
+		'menu_position'	  		=> 9,
 		'supports' => array(
 			'title',
 			'editor',
 			'thumbnail'
 		),
 		'labels' => array(
-			'name' => 'Reviews',
-      'singular_name' => 'Review',
-			'add_new' => 'Add Review',
-			'add_new_item' => 'Add Review',
-			'edit_item' => 'Edit Review',
-			'new_item' => 'New Review',
-			'view_item' => 'View Review',
-			'search_items' => 'Search Reviews',
-			'not_found' => 'No Reviews Found',
-			'not_found_in_trash' => 'No Reviews Found in Trash'
+			'name' 				=> 'Reviews',
+			'singular_name' 	=> 'Review',
+			'all_items' 		=> 'All Reviews',
+			'add_new' 			=> 'Add New',
+			'add_new_item'  	=> 'Add New',
+			'edit_item' 		=> 'Edit Review',
+			'new_item' 			=> 'New Review',
+			'view_item' 		=> 'View Review',
+			'search_items'  	=> 'Search Reviews',
+			'not_found' 		=> 'No Reviews Found',
+			'not_found_in_trash'=> 'No Reviews Found in Trash'
 		),
 
 		);
