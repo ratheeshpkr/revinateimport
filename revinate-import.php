@@ -19,7 +19,7 @@ ob_start();
 		__FILE__,
 		'revinate-import'
 	);
- 
+
 class Revinate {
 
 	/**
@@ -276,7 +276,30 @@ class Revinate {
 				update_post_meta($post_id, 'hotelsubratings', $val['subratings']['Hotel condition']);
 				update_post_meta($post_id, 'locationsubratings', $val['subratings']['Location']);
 				update_post_meta($post_id, 'cleansubratings', $val['subratings']['Cleanliness']);
-				update_post_meta($post_id, 'triptype', $val['tripType']);
+
+        $triptype = $val['tripType'];
+
+        if($triptype == "All Others" || $triptype == "Everyone" || $triptype == "other")
+        {
+             $triptype= "All Others";
+         }
+         else if($triptype == "Business Traveler" || $triptype == "Business travelers" || $triptype == "BusinessTravelers"){
+             $triptype= "Business Traveller";
+         }
+         else if($triptype == "Couple" || $triptype == "couples" || $triptype == "Romance"){
+             $triptype= "Couples";
+         }
+         else if($triptype == "Families" || $triptype == "Family" || $triptype == "Family with older children" || $triptype == "Family with young children"){
+             $triptype= "Families";
+         }
+         else if($triptype == "friends" || $triptype == "Group" || $triptype == "Group of friends" || $triptype = "With Friends"){
+             $triptype= "Friends";
+         }
+         else if($triptype == "solo" || $triptype == "Solo traveler"){
+             $triptype= "Solo Traveler";
+         }
+
+				update_post_meta($post_id, 'triptype', $triptype);
 				update_post_meta($post_id, 'datereview', $dateReview);
 				update_post_meta($post_id, 'datecollected', $dateCollected);
 				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
@@ -728,7 +751,7 @@ function review_shortcode($atts)
             'key'          => 'rating',
             'value'        => '5',
             'compare'      => '<=',
-        ), 
+        ),
 				array(
             'key'          => 'language',
             'value'        => 'English',
@@ -845,7 +868,7 @@ public function widget( $args, $instance ) {
     //echo $args['before_title'] . '<h3 class="line-heading blog-widget-title"><span>'.$title.'</span><hr/></h3>'. $args['after_title'];
 
 	// This is where you run the code and display the output
-	
+
 	echo '
 	<div class="reviews-subrating">
 		<h3>$n Verified Guest Reviews</h3>
@@ -857,21 +880,21 @@ public function widget( $args, $instance ) {
 				echo '<h4>'.get_option( 'totalsubratings').' out of 5</h4>
 			</div>
 			<div class="col-xs-6 col-sm-6">
-				
+
 				<progress max="5" value="'.get_option( 'totalroomsubratings').'"></progress>';
 				echo get_option( 'totalroomsubratings').'
 				<progress max="5" value="'.get_option( 'totalvaluesubratings').'"></progress>';
 				echo get_option( 'totalvaluesubratings').'
 			</div>
 			<div class="col-xs-6 col-sm-6">
-				
+
 				<progress max="5" value="'.get_option( 'totallocationsubratings').'"></progress>';
 				echo get_option( 'totallocationsubratings').'
 				<progress max="5" value="'.get_option( 'totalcleansubratings').'"></progress>';
 				echo get_option( 'totalcleansubratings').'
 			</div>
 	</div>';
-      
+
 	// echo $args['after_widget'];
 }
 
