@@ -269,7 +269,8 @@ class Revinate {
 				update_post_meta($post_id, 'author', $val['author']);
 				update_post_meta($post_id, 'authorlocation', $val['authorLocation']);
 				update_post_meta($post_id, 'rating', $val['rating']);
-				update_post_meta($post_id, 'language', $val['language']['englishName']);
+        $language = strtoupper(trim($val['language']['englishName']));
+				update_post_meta($post_id, 'language', $language);
 				update_post_meta($post_id, 'subratings', $val['subratings']['Service']);
 				update_post_meta($post_id, 'roomsubratings', $val['subratings']['Rooms']);
 				update_post_meta($post_id, 'valuesubratings', $val['subratings']['Value']);
@@ -302,7 +303,8 @@ class Revinate {
 				update_post_meta($post_id, 'triptype', $triptype);
 				update_post_meta($post_id, 'datereview', $dateReview);
 				update_post_meta($post_id, 'datecollected', $dateCollected);
-				update_post_meta($post_id, 'reviewsitename', $val['reviewSite']['name']);
+        $sitename = strtoupper(trim($val['reviewSite']['name']));
+				update_post_meta($post_id, 'reviewsitename', $sitename);
 
 				$i++;
 				}
@@ -420,24 +422,26 @@ class Revinate {
 			'slug' => 'reviews',
 			'with_front' => false
 		),
-		'has_archive'        => true,
-		'show_in_menu'       => true,
+		'has_archive'       	=> true,
+		'show_in_menu'      	=> true,
+		'menu_position'	  		=> 9,
 		'supports' => array(
 			'title',
 			'editor',
 			'thumbnail'
 		),
 		'labels' => array(
-			'name' => 'Reviews',
-      'singular_name' => 'Review',
-			'add_new' => 'Add Review',
-			'add_new_item' => 'Add Review',
-			'edit_item' => 'Edit Review',
-			'new_item' => 'New Review',
-			'view_item' => 'View Review',
-			'search_items' => 'Search Reviews',
-			'not_found' => 'No Reviews Found',
-			'not_found_in_trash' => 'No Reviews Found in Trash'
+			'name' 				=> 'Reviews',
+			'singular_name' 	=> 'Review',
+			'all_items' 		=> 'All Reviews',
+			'add_new' 			=> 'Add New',
+			'add_new_item'  	=> 'Add New',
+			'edit_item' 		=> 'Edit Review',
+			'new_item' 			=> 'New Review',
+			'view_item' 		=> 'View Review',
+			'search_items'  	=> 'Search Reviews',
+			'not_found' 		=> 'No Reviews Found',
+			'not_found_in_trash'=> 'No Reviews Found in Trash'
 		),
 
 		);
