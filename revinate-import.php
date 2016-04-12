@@ -103,7 +103,7 @@ class Revinate {
 		$updateLog = 0;
 		/* Check which page number to be called for API*/
 		if($wpdb->num_rows < 1){
-			$pageNo = '1';
+			$pageNo = '0';
 		}
 		else{
 			$myrows = json_decode(json_encode($myrows), true);
@@ -380,7 +380,7 @@ class Revinate {
 		$myrows = $wpdb->get_results( "SELECT * FROM ".$log_table );
 		$myrows = json_decode(json_encode($myrows), true);
 		if($wpdb->num_rows > 0 && $myrows[0]['pointer'] == 1){
-			$pageNo =1;
+			$pageNo =0;
 			$arr = getCurlData($pageNo);
 			$postTable = $wpdb->prefix . 'options';
 			$myrows = $wpdb->get_results( "SELECT * FROM ".$postTable ."where"  );
