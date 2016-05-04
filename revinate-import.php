@@ -122,7 +122,8 @@ class Revinate {
 				}
 		}
 	}
-	function calcuateaverage($post_ID,$post, $update){
+	function calcuateaverage($post_ID) //,$post, $update
+	{
 		global $wpdb;
 		$subratings = "SELECT Round(AVG($wpdb->postmeta.meta_value),2) as AVRG FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'subratings' AND $wpdb->postmeta.meta_value != ''";
 		$subratings_arr = $wpdb->get_results($subratings, OBJECT);
@@ -349,12 +350,13 @@ class Revinate {
 	function srd_reviews_register_post_type() {
 	/* setup the arguments for the location post type*/
 	$reviews_args = array(
-		'public' => true,
-		'query_var' => 'reviews',
-		'rewrite' => array(
-			'slug' => 'reviews',
-			'with_front' => false
+		'public' 				=> true,
+		'query_var' 			=> 'reviews',
+		'rewrite' 				=> array(
+			'slug' 				=> 'reviews',
+			'with_front' 		=> false
 		),
+		'exclude_from_search' 	=> true,
 		'has_archive'       	=> true,
 		'show_in_menu'      	=> true,
 		'menu_position'	  		=> 9,
