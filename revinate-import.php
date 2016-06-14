@@ -535,7 +535,8 @@ class Revinate {
 	add_action('cron_revinate_pull', 'rev_install_data');
 	/*Fetch latest reviews*/
 	if (!wp_next_scheduled('cron_pull')) {
-			wp_schedule_event(time(), 'daily', 'cron_pull');
+			wp_schedule_event(strtotime('03:00:00'), 'daily', 'cron_pull');
+      //wp_schedule_event(time(), 'daily', 'cron_pull');
 	}
 	add_action('cron_pull', 'pull_daily_reviews');
 	function cd_display($single_templat)
