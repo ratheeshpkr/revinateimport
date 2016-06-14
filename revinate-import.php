@@ -526,7 +526,7 @@ class Revinate {
 	add_filter('cron_schedules', 'add_scheduled_interval');
 	/* add once 10 minute interval to wp schedules*/
 	function add_scheduled_interval($schedules) {
-		$schedules['minutes_10'] = array('interval'=>300, 'display'=>'Once in a span of 10 minutes');
+		$schedules['minutes_10'] = array('interval'=>600, 'display'=>'Once in a span of 10 minutes');
 		return $schedules;
 	}
 	if (!wp_next_scheduled('cron_revinate_pull')) {
