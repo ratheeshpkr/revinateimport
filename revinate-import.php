@@ -102,8 +102,13 @@ class Revinate {
 				if(isset($arr['content'])){
 					$content = $arr['content'];
 					$totalPage = $arr['page']['totalPages'];
+          $totalElements = count($arr['content']);
+          $success = 1;
+          if($totalElements < 100){
+            $success = 0;
+          }
 					if($updateLog != 1){
-					$sql = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pageNo."','".$totalPage."','1','0','".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = 1,total_page = '".$totalPage."',pointer = '0',date = '".$date."'");
+					$sql = $wpdb->query("INSERT INTO ".$log_table." (`id`, `page_no`, `total_page`, `success`,`pointer`,`date`) VALUES('1','".$pageNo."','".$totalPage."',".$success.",'0','".$date."') ON DUPLICATE KEY UPDATE page_no ='".$pageNo."', success = ".$success.",total_page = '".$totalPage."',pointer = '0',date = '".$date."'");
 						if(empty($sql)){
 							$wpdb->show_errors();
 							$wpdb->print_error();
