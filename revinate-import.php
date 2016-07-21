@@ -89,20 +89,21 @@ class Revinate {
 			$myrows = json_decode(json_encode($myrows), true);
 			if($myrows[0]['success'] == 1){
 				$pageNo =$myrows[0]['page_no'];
-				$updateLog = 1;
+				$updateLog = 1;//
 			}
 			else{
 				$pageNo =$myrows[0]['page_no']+1;
 			}
-		}
+		}		
 		/*Check Condition when to call API*/
 		if($myrows[0]['page_no'] != $myrows[0]['total_page'] || $wpdb->num_rows < 1){
+			//error_log("cron_revinate_pull is running");
 				###############fetch mail id
 				$arr = getCurlData($pageNo);/*Call API*/
 				if(isset($arr['content'])){
 					$content = $arr['content'];
 					$totalPage = $arr['page']['totalPages'];
-          $totalElements = count($arr['content']);
+          $totalElements = count($arr['content']);//count total no. of reviews,so that even if there are less reviews than defined we can track it
           $success = 1;
           if($totalElements < 100){
             $success = 0;
@@ -121,10 +122,26 @@ class Revinate {
 				}
 				else{
 					//Error mail,change conditions to default or make conditions to start
+					/* $timeMinutesCron = wp_next_scheduled ('cron_revinate_pull');
+					error_log($timeMinutesCron);
+					wp_unschedule_event ($timeMinutesCron, 'cron_revinate_pull');
+					wp_clear_scheduled_hook('cron_revinate_pull');
+					error_log("cron_revinate_pull stopped"); */
+					if($myrows[0]['pointer'] == 1){
+						wp_clear_scheduled_hook('cron_revinate_pull');
+						error_log("cron stopped");
+					}					
 					echo "API Acces Denied.User credentials do not have access to large page size";
 					$logUpdate = $wpdb->query("UPDATE $log_table SET `pointer`= '1',date = '".$date."'");
 					return;
 				}
+		}
+		else{
+			//stop the cron
+			if(($myrows[0]['page_no'] == $myrows[0]['total_page']) && ($myrows[0]['success'] == 0)){
+				wp_clear_scheduled_hook('cron_revinate_pull');
+				error_log("cron_revinate_pull stopped");
+			}			
 		}
 	}
 	function calcuateaverage($post_ID) //,$post, $update
@@ -308,6 +325,7 @@ class Revinate {
 		$error = curl_error($ch);
 		$http_code = curl_getinfo($ch );
 		curl_close($ch);
+		//error_log($http_result);
 		$arr =  json_decode($http_result,true);
 		return $arr;
 	}
@@ -519,19 +537,24 @@ class Revinate {
 	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
 	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
 	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
-	register_deactivation_hook( __FILE__, array('Revinate','cronstarter_deactivate') );
+	register_deactivation_hook( __FILE__, array('Revinate','cronstarter_deactivate') );	
 	/*
 	* Set cron for calling API and saving reviews
 	*/
+
 	add_filter('cron_schedules', 'add_scheduled_interval');
 	/* add once 10 minute interval to wp schedules*/
 	function add_scheduled_interval($schedules) {
-		$schedules['minutes_10'] = array('interval'=>600, 'display'=>'Once in a span of 10 minutes');
+		$schedules['minutes_10'] = array('interval'=>60, 'display'=>'Once in a span of 10 minutes');
 		return $schedules;
 	}
-	if (!wp_next_scheduled('cron_revinate_pull')) {
-			wp_schedule_event(time(), 'minutes_10', 'cron_revinate_pull');
+	register_activation_hook(__FILE__, 'cron_revinate_pull_activation');
+	function cron_revinate_pull_activation() {
+		if (!wp_next_scheduled('cron_revinate_pull')) {
+				wp_schedule_event(time(), 'minutes_10', 'cron_revinate_pull');
+		}
 	}
+
 	add_action('cron_revinate_pull', 'rev_install_data');
 	/*Fetch latest reviews*/
 	if (!wp_next_scheduled('cron_pull')) {
