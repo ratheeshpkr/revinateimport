@@ -1,23 +1,17 @@
 <?php
 /*
 Plugin Name:  Hotel Reviews
-Plugin URI: http://wordpress.org/
-Description: The best rating plugin for WordPress. Hotel Reviews shows all multiple Hotel ratings through Revinate API
+Plugin URI: http://www.snhotels.com/
+Description: The best rating plugin for WordPress. Hotel Reviews shows all multiple Hotel ratings.
 Version: 1.3
-Author: Sakhatech
+Author: SNHotels
 Author URI: https://github.com/ratheeshpkr/revinateimport
 License: GPL2
 Text Domain: Hotel-rating
 Domain Path: languages
 */
 ob_start();
-//Checking for Update
-  require 'plugin-update-checker/plugin-update-checker.php';
-	$MyUpdateChecker = PucFactory::buildUpdateChecker(
-    'http://snc.staging.snhotels.com/metadata_rating.json',
-		__FILE__,
-		'revinate-import'
-	);
+
 class Revinate {
 	/**
 	 * Activation
@@ -94,10 +88,10 @@ class Revinate {
 			else{
 				$pageNo =$myrows[0]['page_no']+1;
 			}
-		}		
+		}
 		/*Check Condition when to call API*/
 		if($myrows[0]['page_no'] != $myrows[0]['total_page'] || $wpdb->num_rows < 1){
-			//error_log("cron_revinate_pull is running");
+
 				###############fetch mail id
 				$arr = getCurlData($pageNo);/*Call API*/
 				if(isset($arr['content'])){
@@ -122,15 +116,10 @@ class Revinate {
 				}
 				else{
 					//Error mail,change conditions to default or make conditions to start
-					/* $timeMinutesCron = wp_next_scheduled ('cron_revinate_pull');
-					error_log($timeMinutesCron);
-					wp_unschedule_event ($timeMinutesCron, 'cron_revinate_pull');
-					wp_clear_scheduled_hook('cron_revinate_pull');
-					error_log("cron_revinate_pull stopped"); */
 					if($myrows[0]['pointer'] == 1){
 						wp_clear_scheduled_hook('cron_revinate_pull');
 						error_log("cron stopped");
-					}					
+					}
 					echo "API Acces Denied.User credentials do not have access to large page size";
 					$logUpdate = $wpdb->query("UPDATE $log_table SET `pointer`= '1',date = '".$date."'");
 					return;
@@ -141,7 +130,7 @@ class Revinate {
 			if(($myrows[0]['page_no'] == $myrows[0]['total_page']) && ($myrows[0]['success'] == 0)){
 				wp_clear_scheduled_hook('cron_revinate_pull');
 				error_log("cron_revinate_pull stopped");
-			}			
+			}
 		}
 	}
 	function calcuateaverage($post_ID) //,$post, $update
@@ -197,7 +186,6 @@ class Revinate {
 				$body = "";
 			}
 			$querystr = "SELECT * FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = 'link' AND $wpdb->postmeta.meta_value = '".$val['links'][0]['href']."'";
-			//$querystr = $wpdb->escape( $querystr );
 			$pageposts = $wpdb->get_results($querystr, OBJECT);
 			if(count($pageposts) > 0){
 				$i++;
@@ -228,13 +216,9 @@ class Revinate {
 				return;
 				//Error mail
 			}
-			//echo $post_id."----".$title."____".$i."<br/>";
+
 			if ($post_id) {
-				/*Insert in to Postmeta Table*/
-				// if(is_null($val['dateReview']))
-				// 	 		$dateReview = '';
-				// else
-				// 			$dateReview = date("m/d/Y",$val['dateReview']);
+
 				if(is_null($val['dateCollected']))
 					 		$dateCollected = '';
 				else
@@ -325,7 +309,7 @@ class Revinate {
 		$error = curl_error($ch);
 		$http_code = curl_getinfo($ch );
 		curl_close($ch);
-		//error_log($http_result);
+
 		$arr =  json_decode($http_result,true);
 		return $arr;
 	}
@@ -537,7 +521,7 @@ class Revinate {
 	register_activation_hook( __FILE__, array( 'Revinate', 'install' ) );
 	register_deactivation_hook( __FILE__, array('Revinate','pluginprefix_deactivation') );
 	register_activation_hook( __FILE__, array( 'Revinate','rev_install') );
-	register_deactivation_hook( __FILE__, array('Revinate','cronstarter_deactivate') );	
+	register_deactivation_hook( __FILE__, array('Revinate','cronstarter_deactivate') );
 	/*
 	* Set cron for calling API and saving reviews
 	*/
@@ -559,7 +543,6 @@ class Revinate {
 	/*Fetch latest reviews*/
 	if (!wp_next_scheduled('cron_pull')) {
 			wp_schedule_event(strtotime('03:00:00'), 'daily', 'cron_pull');
-      //wp_schedule_event(time(), 'daily', 'cron_pull');
 	}
 	add_action('cron_pull', 'pull_daily_reviews');
 	function cd_display($single_templat)
@@ -740,10 +723,8 @@ function review_shortcode($atts)
 		</div>
 
 		<?php
-								// }
     endwhile;
 	  }
-	      //wp_reset_query();  // Restore global post data stomped by the_post().
 	  ?>
 		</div>
 		<div class="col-xs-12">
@@ -772,8 +753,6 @@ public function widget( $args, $instance ) {
 	// before and after widget arguments are defined by themes
 	echo $args['before_widget'];
 	if ( ! empty( $title ) )
-	  // echo $args['before_title'] . $title . $args['after_title'];
-    //echo $args['before_title'] . '<h3 class="line-heading blog-widget-title"><span>'.$title.'</span><hr/></h3>'. $args['after_title'];
 	// This is where you run the code and display the output
 	echo '
 	<div class="reviews-subrating">
@@ -798,7 +777,6 @@ public function widget( $args, $instance ) {
 				echo get_option( 'totalcleansubratings').'
 			</div>
 	</div>';
-	// echo $args['after_widget'];
 }
 // Widget Backend
 public function form( $instance ) {
