@@ -370,7 +370,8 @@ class Revinate {
 		'supports' => array(
 			'title',
 			'editor',
-			'thumbnail'
+			'thumbnail',
+			'comments'
 		),
 		'labels' => array(
 			'name' 				=> 'Reviews',
